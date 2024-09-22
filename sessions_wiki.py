@@ -11,6 +11,9 @@ def get_congress_list():
     response = requests.get(page_url)
     soup = BeautifulSoup(response.content, 'html.parser')
 
+
+    congress_list = []
+
     congress_tables = soup.findAll("table",{'class': "wikitable"}) 
 
     previous_congress_table = congress_tables[0]
@@ -20,11 +23,23 @@ def get_congress_list():
             URL = "https://en.wikipedia.org" + row.find("a").get("href")
             start_date = row.findAll("td")[0].text.strip()
             end_date = row.findAll("td")[-1].text.strip()
-            # print((start_date, end_date))
+            congress_list.append({'congress_num': congress_num, 'start_date': start_date,
+                                  'end_date': end_date, 'URL': URL})
 
     present_congress_table = congress_tables[1]
-    print(present_congress_table.find("a"))
-    print(present_congress_table.find("a").get("href"))
+    for row in present_congress_table.findAll("tr"):
+        if row.find("a") is not None:
+            congress_num = int(row.find("a").text.split()[0][:-2])
+            URL = "https://en.wikipedia.org" + row.find("a").get("href")
+            start_date = row.findAll("td")[0].text.strip()
+            end_date = row.findAll("td")[-1].text.strip()
+            congress_list.append({'congress_num': congress_num, 'start_date': start_date,
+                        'end_date': end_date, 'URL': URL})
+            
+    # for congress in congress_list:
+    #     print(congress)
+
+    return congress_list
 
 
 
@@ -67,16 +82,17 @@ def get_congresspeople_for_a_congress(page_url):
                 party = match.group(1)
                 print(party)
                 congressmen_data.append({'name':a.text, 'URL': "https://en.wikipedia.org" + a.get("href")
-                                        ,'party': party
+                                        ,'party': party, 'state': state
                                         })
 
 
 
 
-    # print(state)
-    # print(congressmen_data)
-    # print("\n")
 
+
+#no parties until 4th congress
+
+get_congress_list()
 
 
 
