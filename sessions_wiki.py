@@ -11,39 +11,21 @@ def get_congress_list():
     response = requests.get(page_url)
     soup = BeautifulSoup(response.content, 'html.parser')
 
-
     congress_list = []
-
-    congress_tables = soup.findAll("table",{'class': "wikitable"}) 
-
-    previous_congress_table = congress_tables[0]
-    for row in previous_congress_table.findAll("tr"):
-        if row.find("a") is not None:
-            congress_num = int(row.find("a").text.split()[0][:-2])
-            URL = "https://en.wikipedia.org" + row.find("a").get("href")
-            start_date = row.findAll("td")[0].text.strip()
-            end_date = row.findAll("td")[-1].text.strip()
-            congress_list.append({'congress_num': congress_num, 'start_date': start_date,
-                                  'end_date': end_date, 'URL': URL})
-
-    present_congress_table = congress_tables[1]
-    for row in present_congress_table.findAll("tr"):
-        if row.find("a") is not None:
-            congress_num = int(row.find("a").text.split()[0][:-2])
-            URL = "https://en.wikipedia.org" + row.find("a").get("href")
-            start_date = row.findAll("td")[0].text.strip()
-            end_date = row.findAll("td")[-1].text.strip()
-            congress_list.append({'congress_num': congress_num, 'start_date': start_date,
-                        'end_date': end_date, 'URL': URL})
-            
+    #below variables has "previous congress" and "current congress" in two tables in a list
+    congress_tables = soup.findAll("table",{'class': "wikitable"})[:2]
+    for congress_table in congress_tables:
+        for row in congress_table.findAll("tr"):
+            if row.find("a") is not None:
+                congress_num = int(row.find("a").text.split()[0][:-2])
+                URL = "https://en.wikipedia.org" + row.find("a").get("href")
+                start_date = row.findAll("td")[0].text.strip()
+                end_date = row.findAll("td")[-1].text.strip()
+                congress_list.append({'congress_num': congress_num, 'start_date': start_date,
+                                    'end_date': end_date, 'URL': URL})
     # for congress in congress_list:
     #     print(congress)
-
     return congress_list
-
-
-
-
 
 
 
