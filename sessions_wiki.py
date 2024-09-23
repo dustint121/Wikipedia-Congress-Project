@@ -111,19 +111,8 @@ def get_congresspeople_for_a_congress(page_url):
     soup = BeautifulSoup(response.content, 'html.parser')
     print(page_url)
 
-    #13 representative table URL is weird, but doable; ignore for now
+
     #24 does not use tables
-    #31, 48, 50, 52 have 1 additional tables at end, can do subset list
-    #37, 70 has 4 tables
-    # if page_url in ["https://en.wikipedia.org/wiki/24th_United_States_Congress",
-    #                 "https://en.wikipedia.org/wiki/31st_United_States_Congress",
-    #                 "https://en.wikipedia.org/wiki/37th_United_States_Congress",
-    #                 "https://en.wikipedia.org/wiki/48th_United_States_Congress",
-    #                 "https://en.wikipedia.org/wiki/50th_United_States_Congress",
-    #                 "https://en.wikipedia.org/wiki/52nd_United_States_Congress"
-                    
-    # ]:
-    #     return
     if page_url in ["https://en.wikipedia.org/wiki/24th_United_States_Congress"]:
         return
 
@@ -131,12 +120,7 @@ def get_congresspeople_for_a_congress(page_url):
 
 
     tables = soup.find_all("table",{'class':"col-begin", 'role':"presentation"})
-    # print(len(tables))
-
     senate_table, representative_table = tables[:2]
-
-    # check_senate = "/wiki/List_of_United_States_senators" in  senate_table.find('div', class_="mw-heading mw-heading4").find("a").get("href")
-    # check_representative = "/wiki/List_of_United_States_representatives" in representative_table.find('div', class_="mw-heading mw-heading4").find("a").get("href")
 
     #check for connecticut or alabama id ; alabama starts as of 16th congress 
     check_senate = senate_table.find('div', class_="mw-heading mw-heading4").find("h4").get("id") in ["Alabama", "Connecticut"]
@@ -146,31 +130,39 @@ def get_congresspeople_for_a_congress(page_url):
         print("Issue")
 
 
-    # # senate_table = representative_table
+    senate_table = representative_table
 
-    # states = [heading.find("h4").text for heading in senate_table.find_all('div', class_='mw-heading4')]
+    states = [heading.find("h4").text.strip() for heading in senate_table.find_all('div', class_='mw-heading4')]
 
-    # congressmen_by_state_HTML = senate_table.find_all("dl") #need to remove senators not at the start of congress session
-    # #below line: removes senators not at start of congress session; is written as a sub-dl tag in the html code 
-    # congressmen_by_state_HTML = [dl for dl in congressmen_by_state_HTML if dl.find_parent('dl') is None] 
+    congressmen_by_state_HTML = senate_table.find_all("dl") #need to remove senators not at the start of congress session
+    #below line: removes senators not at start of congress session; is written as a sub-dl tag in the html code 
+    congressmen_by_state_HTML = [dl for dl in congressmen_by_state_HTML if dl.find_parent('dl') is None] 
 
 
-    # for index in range(len(states)): #for each state
-    #     state = states[index]
-    #     congressmen_data = []
-    #     for a in congressmen_by_state_HTML[index].find_all('a', resurive=False):
-    #         # Check if the parent of the <a> tag is a direct child of the <dl> tag; 
-    #             # to prevent recording of substitute congressman
-    #         #filter for no "span" direct parent tag; is unneeded data
-    #         if a.find_parent('dl') == congressmen_by_state_HTML[index] and a.parent.name != "span":
-    #             #get party affiation below
-    #             text = a.parent.text
-    #             match = re.search(r'\((.*?)\)', text) #get text inside parenthesis that represents party affiation
-    #             party = match.group(1)
-    #             print(party)
-    #             congressmen_data.append({'name':a.text, 'URL': "https://en.wikipedia.org" + a.get("href")
-    #                                     ,'party': party, 'state': state
-    #                                     })
+    for index in range(len(states)): #for each state
+        state = states[index]
+        congressmen_data = []
+        # Check if the parent of the <a> tag is a direct child of the <dl> tag; 
+            # to prevent recording of substitute congressman
+        for a in congressmen_by_state_HTML[index].find_all('a', resurive=False):
+            if a.text in ["Skip to House of Representatives", "data missing"] or a.text[0] == '[':
+                continue
+            #filter for no "span" direct parent tag; is unneeded data
+            if a.find_parent('dl') == congressmen_by_state_HTML[index] and a.parent.name != "span":
+                #get party affiation below
+                name = a.text.strip()
+                URL = "https://en.wikipedia.org" + a.get("href")
+                text = a.parent.text
+                match = re.search(r'\((.*?)\)', text) #get text inside parenthesis that represents party affiation
+                if match == None:
+                    if state in ["Non-voting members", "Non-voting delegates"]:
+                        continue
+                    if name == "William G. McAdoo": #edge case for Senate, 73th congress
+                        match = re.search(r'\((.*?)\)', "(D)")
+                    print(name)
+                    print(state)
+                party = match.group(1)
+                congressmen_data.append({'name':name, 'URL': URL,'party': party, 'state': state})
 
 
 
@@ -180,5 +172,5 @@ for congress in congress_dict:
     congress_num = congress
     congress_URL = congress_dict[congress_num]["URL"]
     get_congresspeople_for_a_congress(congress_URL)
-    # if congress_num > 20:
+    # if congress_num > 70:
     #     get_congresspeople_for_a_congress(congress_URL)
