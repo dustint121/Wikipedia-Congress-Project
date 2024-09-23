@@ -50,10 +50,10 @@ def get_party_to_URL_dict():
     return party_URL_dict
 
 
-
+#NEED to re-test
 #get political parties/affiations for each congress
 def get_all_parties_dict():
-    congress_list = get_congress_list()[1:] #will skip the first congress for convience on "previous congress" check
+    congress_list = get_full_congress_dict() #will skip the first congress for convience on "previous congress" check
     party_dict = {1: {'A': 'Anti-Administration', 'P': 'Pro-Administration'}}
     for congress in congress_list:
         congress_num = congress['congress_num']
@@ -106,24 +106,29 @@ def get_all_parties_dict():
 
 
 def get_congresspeople_for_a_congress(page_url):
-    # page_url = "https://en.wikipedia.org/wiki/1st_United_States_Congress"
     response = requests.get(page_url)
     soup = BeautifulSoup(response.content, 'html.parser')
     print(page_url)
 
 
-    #24 does not use tables
-    if page_url in ["https://en.wikipedia.org/wiki/24th_United_States_Congress"]:
-        return
-
+    #24th congress wiki page does not use tables; fix using a modified html file with two tables elements to read
+    if page_url == "https://en.wikipedia.org/wiki/24th_United_States_Congress":
+        with open("html/24th_congress_data.html", 'r', encoding='utf-8') as file:
+            html_content = file.read()
+            soup = BeautifulSoup(html_content, 'html.parser')
 
     tables = soup.find_all("table",{'class':"col-begin", 'role':"presentation"})[:2]
+
+
     # senate_table, representative_table = tables[:2]
     # #check for connecticut or alabama id ; alabama starts as of 16th congress 
     # check_senate = senate_table.find('div', class_="mw-heading mw-heading4").find("h4").get("id") in ["Alabama", "Connecticut"]
     # check_representative = representative_table.find('div', class_="mw-heading mw-heading4").find("h4").get("id") in ["Alabama_2", "Connecticut_2"]
     # if (check_senate and check_representative) is not True:
     #     print("Issue")
+
+
+    congressmen_data = []
 
     type = "Senator" #will change to "Representative" at bottom of while loop for 2nd table
     for table in tables:
@@ -132,12 +137,11 @@ def get_congresspeople_for_a_congress(page_url):
         #below line: removes senators not at start of congress session; is written as a sub-dl tag in the html code 
         congressmen_by_state_HTML = [dl for dl in congressmen_by_state_HTML if dl.find_parent('dl') is None] 
 
-
+    
         for index in range(len(states)): #for each state
             state = states[index]
             if state in ["Non-voting members", "Non-voting delegates", "Foreign Relations"]:
                 continue
-            congressmen_data = []
             # Check if the parent of the <a> tag is a direct child of the <dl> tag; 
                 # to prevent recording of substitute congressman
             # print(len(states))
@@ -159,17 +163,20 @@ def get_congresspeople_for_a_congress(page_url):
                             match = re.search(r'\((.*?)\)', "(D)")
                     party = match.group(1)
                     congressmen_data.append({'name':name, 'URL': URL,'party': party, 'type': type, 'state': state})
-
         type = "Representative"
+    return congressmen_data
 
 
 
 
-congress_dict = get_full_congress_dict()
-for congress in congress_dict:
-    congress_num = congress
-    congress_URL = congress_dict[congress_num]["URL"]
-    get_congresspeople_for_a_congress(congress_URL)
+# congress_dict = get_full_congress_dict()
+# count = 0
+# for congress in congress_dict:
+#     congress_num = congress
+#     congress_URL = congress_dict[congress_num]["URL"]
+#     result = get_congresspeople_for_a_congress(congress_URL)
+#     count += len(result)
+#     print(count)
 
-    # if congress_num == 37:
-    #     get_congresspeople_for_a_congress(congress_URL)
+
+get_all_parties_dict()
