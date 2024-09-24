@@ -2,6 +2,8 @@ import requests
 from bs4 import BeautifulSoup
 import re
 
+import persons_wiki
+
 #has 3 tables for congressional session: past, current, future
 def get_full_congress_dict():
     page_url = "https://en.wikipedia.org/wiki/List_of_United_States_Congresses"
@@ -163,20 +165,25 @@ def get_congresspeople_for_a_congress(page_url):
                             match = re.search(r'\((.*?)\)', "(D)")
                     party = match.group(1)
                     congressmen_data.append({'name':name, 'URL': URL,'party': party, 'type': type, 'state': state})
+
+                    # print(URL)
+                    persons_wiki.get_politician_bday(URL)
+
         type = "Representative"
     return congressmen_data
 
 
 
 
-# congress_dict = get_full_congress_dict()
-# count = 0
-# for congress in congress_dict:
-#     congress_num = congress
-#     congress_URL = congress_dict[congress_num]["URL"]
-#     result = get_congresspeople_for_a_congress(congress_URL)
-#     count += len(result)
-#     print(count)
+congress_dict = get_full_congress_dict()
+count = 0
+for congress in congress_dict:
+    congress_num = congress
+    congress_URL = congress_dict[congress_num]["URL"]
+    if congress_num >= 117:
+        result = get_congresspeople_for_a_congress(congress_URL)
+    # count += len(result)
+    # print(count)
 
 
-get_all_parties_dict()
+# get_all_parties_dict()
