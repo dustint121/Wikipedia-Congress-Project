@@ -11,8 +11,8 @@ def get_politician_bday(page_url, congress_start_date=None):
     if response.status_code != 200:
         return None
     soup = BeautifulSoup(response.content, 'html.parser')
-    #return the first set of text that exceeds 100 characters; should be the summary section
-    summary_text = next(p.get_text() for p in soup.find_all("p") if len(p.get_text()) > 100)
+    #return the first set of text that exceeds 75 characters; should be the summary section
+    summary_text = next(p.get_text() for p in soup.find_all("p") if len(p.get_text()) > 75)
     summary_text = summary_text[:200] #get substring for faster processing and other issues
 
 
@@ -26,19 +26,19 @@ def get_politician_bday(page_url, congress_start_date=None):
     year_list = re.findall(r'\d{4}', summary_text)
 
 
-    #make sure there is no overlap in the year_list and the other lists by checking indices
-    month_year_index = [summary_text.find(month_year) for month_year in month_year_list]
-    full_dates_index = [summary_text.find(full_date) for full_date in full_dates_list]
-    year_list = [year for year in year_list if summary_text.find(year) not in month_year_index + full_dates_index]
+    #make sure there is no overlap in the year_list and the other lists by checking years 
+    invalid_years_check = "".join(month_year_list) + "".join(full_dates_list)
+    year_list = [year for year in year_list if year not in invalid_years_check]
+
 
     first_parenthesis_index = summary_text.find('(')
     closing_parenthesis_index = summary_text.find(')')
     en_dash_index =  summary_text.find('–')
-
+ 
     print(full_dates_list)
-    print("fas")
-    print(summary_text)
-    print(re.findall(r'\w+\s+\d{1,2},\s+\d{4}', "(September 23, 1745 – September 24, 1815) "))
+    print(year_list)
+
+
 
     matches = []
     #format: (born Month day, year)
@@ -58,27 +58,36 @@ def get_politician_bday(page_url, congress_start_date=None):
 
 
     #check for (month day, year – month year)
-    elif (len(full_dates_list) == 1 and len(month_year_list) == 1 and
+    elif (len(full_dates_list) >= 1 and len(month_year_list) >= 1 and
             (first_parenthesis_index < summary_text.find(full_dates_list[0])
             < en_dash_index < summary_text.find(month_year_list[0]) < closing_parenthesis_index
             )
           ):
         matches += month_year_list
-        print("(month day, year – month year): " + page_url)
-        print("from " + full_dates_list[0]
-              + " to " + month_year_list[0])
+        # print("(month day, year – month year): " + page_url)
+        # print("from " + full_dates_list[0]
+        #       + " to " + month_year_list[0])
 
+
+    #check for (month day, year – year)
+    elif (len(full_dates_list) >= 1 and len(year_list) >= 1 and
+            (first_parenthesis_index < summary_text.find(full_dates_list[0])
+            < en_dash_index < summary_text.find(year_list[0]) < closing_parenthesis_index
+            )
+          ):
+        matches += year_list
+        print("(month day, year – year): " + page_url)
 
     #check for (month year – month day, year)
-    elif (len(month_year_list) == 1 and len(full_dates_list) == 1 and
+    elif (len(month_year_list) >= 1 and len(full_dates_list) >= 1 and
             (first_parenthesis_index < summary_text.find(month_year_list[0])
             < en_dash_index < summary_text.find(full_dates_list[0]) < closing_parenthesis_index
             )
           ):
         matches += month_year_list
-        print("(month year – month day, year): " + page_url)
-        print("from " + month_year_list[0]
-              + " to " + full_dates_list[0])
+        # print("(month year – month day, year): " + page_url)
+        # print("from " + month_year_list[0]
+        #       + " to " + full_dates_list[0])
     
     #check for month year - month year
     elif (len(month_year_list) >= 2 and 
@@ -88,7 +97,7 @@ def get_politician_bday(page_url, congress_start_date=None):
             )
           ):
         matches += month_year_list
-        print("(month year – month year): " + page_url)
+        # print("(month year – month year): " + page_url)
 
     #check for (year – month day, year)
     elif (len(year_list) > 0 and len(full_dates_list) > 0 and
@@ -96,7 +105,7 @@ def get_politician_bday(page_url, congress_start_date=None):
              < en_dash_index < summary_text.find(full_dates_list[0]) < closing_parenthesis_index)
             ):
         matches.append(year_list[0])
-        print("(year – full date): " + page_url)
+        # print("(year – full date): " + page_url)
 
     #check for (year – month year)
     elif (len(year_list) > 0 and len(month_year_list) > 0 and
@@ -129,15 +138,11 @@ def get_politician_bday(page_url, congress_start_date=None):
             if first_parenthesis_index < index < closing_parenthesis_index:
                 matches.append(possible_match)
         matches.append("")
-        print("full date without born" + page_url)
+        print("full date without born: " + page_url)
         print("match6: " +  str(matches))
 
  
     bday_text = matches[0].strip() if len(matches) > 0 else ""
-
-    if page_url == "https://en.wikipedia.org/wiki/John_Vining": #(month day, year - month year)
-        bday_text = "December 23, 1758"
-
 
     bday = process_unformatted_bday_text(bday_text.strip(), page_url)
     # print(str(matches) + ":\t" + bday)
@@ -145,6 +150,10 @@ def get_politician_bday(page_url, congress_start_date=None):
         if page_url == "https://en.wikipedia.org/wiki/Doug_Lamborn": #having "born" in name messes up function
             bday = "May 24, 1954"
         elif page_url == "https://en.wikipedia.org/wiki/John_Laurance": #a pair of parenthesis before dob for nickname
+            bday = "January 1, 1750"
+        elif page_url == "https://en.wikipedia.org/wiki/Daniel_Morgan": #has a hyphen instead of en-dash
+            bday = "January 1, 1736"
+        elif page_url == "https://en.wikipedia.org/wiki/Abram_Trigg": #has an unknown date of death
             bday = "January 1, 1750"
 
         else:
@@ -231,22 +240,34 @@ def is_valid_date(date_string, date_format="%B %d, %Y"):
 
 
 
+#edge cases to work on
+
+# "https://en.wikipedia.org/wiki/William_Shepard" doable but weird
+# "https://en.wikipedia.org/wiki/Daniel_Morgan"  ;broken; to fix; has hyphen instend of en-dash
+# "https://en.wikipedia.org/wiki/Abram_Trigg" ;broken; to fix; has unknown as date of dead
+
+#text length considerations below
+
+# "https://en.wikipedia.org/wiki/Philip_Key_(U.S._politician)"  #summary text is only 96 characters
+# "https://en.wikipedia.org/wiki/John_Sevier" #there is another text before sumamry text that is 73 characters
+
+#test cases below
 
 # print(get_politician_bday("https://en.wikipedia.org/wiki/Oliver_Ellsworth")) #full date to full date
 # get_politician_bday("https://en.wikipedia.org/wiki/William_Smith_(South_Carolina_senator)") #has "c. [year]"
 # print(get_politician_bday("https://en.wikipedia.org/wiki/John_Vining")) #has full date to month year
+# print(get_politician_bday("https://en.wikipedia.org/wiki/Peter_Van_Gaasbeck")) #full date to year
 # get_politician_bday("https://en.wikipedia.org/wiki/John_Henry_(Maryland_politician)") #has "month year to full date"
 # get_politician_bday("https://en.wikipedia.org/wiki/Cornelius_C._Schoonmaker") #month year - month year
 # print(get_politician_bday("https://en.wikipedia.org/wiki/Andrew_Moore_(politician)"))#year - full date
 # get_politician_bday("https://en.wikipedia.org/wiki/John_Edwards_(Kentucky_politician)") # year - year
 
 # https://en.wikipedia.org/wiki/Philip_Schuyler  #has a hyphen instead of en-dash; still works
-page_url = "https://en.wikipedia.org/wiki/John_Sevier"
+# page_url = "https://en.wikipedia.org/wiki/John_Sevier"
 # response = requests.get(page_url)
 # soup = BeautifulSoup(response.content, 'html.parser')
 
-# summary_text = next(p.get_text() for p in soup.find_all("p") if len(p.get_text()) > 50)
+# summary_text = next(p.get_text() for p in soup.find_all("p") if len(p.get_text()) > 75)
+# print(len(summary_text))
 # print(summary_text)
-# # # First pattern to match dates between a parenthesis and a dash
-
 # print(get_politician_bday(page_url))

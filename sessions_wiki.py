@@ -110,7 +110,7 @@ def get_all_parties_dict():
 def get_congresspeople_for_a_congress(page_url, congress_end_date=None):
     response = requests.get(page_url)
     soup = BeautifulSoup(response.content, 'html.parser')
-    print(page_url)
+    print("\n" + page_url)
 
 
     #24th congress wiki page does not use tables; fix using a modified html file with two tables elements to read
@@ -181,7 +181,7 @@ for congress in congress_dict:
     congress_num = congress
     congress_URL = congress_dict[congress_num]["URL"]
     congress_start_date = congress_dict[congress_num]["start_date"]
-    if congress_num < 2:
+    if congress_num < 6:
         result = get_congresspeople_for_a_congress(congress_URL, congress_start_date)
     # count += len(result)
     # print(count)
