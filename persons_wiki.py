@@ -2,18 +2,23 @@ import requests
 from bs4 import BeautifulSoup
 import re
 from datetime import datetime
+import wikipediaapi
 
 def get_politician_bday(page_url, congress_start_date=None):
-    # response = requests.get(page_url, timeout=10) #10 seconds to read
-    response = requests.get(page_url)
-    if response == None:
-        print(page_url)
-    if response.status_code != 200:
-        return None
-    soup = BeautifulSoup(response.content, 'html.parser')
+#NOTE: TRY WIKIAPI TO GET SUMMARY TEXT INSTEAD.
+
     #return the first set of text that exceeds 75 characters; should be the summary section
-    summary_text = next(p.get_text() for p in soup.find_all("p") if len(p.get_text()) > 75)
-    summary_text = summary_text[:200] #get substring for faster processing and other issues
+    wiki_wiki = wikipediaapi.Wikipedia('Congress Wiki Project(dustintran36@gmail.com)', 'en')
+    page_title = page_url.split("wiki/")[1]
+    page_py = wiki_wiki.page(page_title)
+    summary_text = page_py.summary[:200]
+
+    if len(summary_text) == 0:
+        response = requests.get(page_url)
+        soup = BeautifulSoup(response.content, 'html.parser')
+        summary_text = next(p.get_text() for p in soup.find_all("p") if len(p.get_text()) > 75)
+        summary_text = summary_text[:200] #get substring for faster processing and other issues
+        print("Using html request for: " + page_url)
 
 
 
@@ -25,20 +30,13 @@ def get_politician_bday(page_url, congress_start_date=None):
     month_year_list = [month_year for month_year in month_year_list if month_year.split()[0] in months_list]
     year_list = re.findall(r'\d{4}', summary_text)
 
-
     #make sure there is no overlap in the year_list and the other lists by checking years 
     invalid_years_check = "".join(month_year_list) + "".join(full_dates_list)
     year_list = [year for year in year_list if year not in invalid_years_check]
 
-
     first_parenthesis_index = summary_text.find('(')
     closing_parenthesis_index = summary_text.find(')')
     en_dash_index =  summary_text.find('–')
- 
-    print(full_dates_list)
-    print(year_list)
-
-
 
     matches = []
     #format: (born Month day, year)
@@ -157,7 +155,7 @@ def get_politician_bday(page_url, congress_start_date=None):
             bday = "January 1, 1750"
 
         else:
-            print("Invalid Date for: " + page_url) 
+            print("Invalid/Unknown Date for: " + page_url) 
             print("\t" + bday_text)
             if bday != None:
                 print("\t" + bday)
@@ -240,6 +238,9 @@ def is_valid_date(date_string, date_format="%B %d, %Y"):
 
 
 
+
+
+
 #edge cases to work on
 
 # "https://en.wikipedia.org/wiki/William_Shepard" doable but weird
@@ -263,11 +264,22 @@ def is_valid_date(date_string, date_format="%B %d, %Y"):
 # get_politician_bday("https://en.wikipedia.org/wiki/John_Edwards_(Kentucky_politician)") # year - year
 
 # https://en.wikipedia.org/wiki/Philip_Schuyler  #has a hyphen instead of en-dash; still works
-# page_url = "https://en.wikipedia.org/wiki/John_Sevier"
-# response = requests.get(page_url)
-# soup = BeautifulSoup(response.content, 'html.parser')
+page_url = "https://en.wikipedia.org/wiki/Peter_Silvester_(1734%E2%80%931808)" #does not have summary
+# page_url = "https://en.wikipedia.org/wiki/James_Lloyd_(Maryland_politician)"
+wiki_wiki = wikipediaapi.Wikipedia('Congress Wiki Project(dustintran36@gmail.com)', 'en')
+page_title = page_url.split("wiki/")[1]
+page_py = wiki_wiki.page(page_title)
+summary_text = page_py.summary
+# print(len(summary_text))
 
-# summary_text = next(p.get_text() for p in soup.find_all("p") if len(p.get_text()) > 75)
+
+response = requests.get(page_url)
+soup = BeautifulSoup(response.content, 'html.parser')
+
+summary_text = next(p.get_text() for p in soup.find_all("p") if len(p.get_text()) > 75)
+# print(summary_text)
 # print(len(summary_text))
 # print(summary_text)
 # print(get_politician_bday(page_url))
+
+
