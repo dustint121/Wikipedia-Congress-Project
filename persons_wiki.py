@@ -10,20 +10,19 @@ def get_politician_bday(page_url, congress_start_date=None):
 
     #return the first set of text that exceeds 75 characters; should be the summary section
     wiki_wiki = wikipediaapi.Wikipedia('Congress Wiki Project(dustintran36@gmail.com)', 'en')
+    page_url = urllib.parse.unquote(page_url) #remove possible URL encryption that wikiapi can't handle
     page_title = page_url.split("wiki/")[1]
-    page_title = urllib.parse.unquote(page_title) #remove possible encryption that wikiapi can't handle
+    # page_title = urllib.parse.unquote(page_title) #remove possible encryption that wikiapi can't handle
     page_py = wiki_wiki.page(page_title)
 
     summary_text = page_py.summary[:200]
 
-    if len(summary_text) == 0:
-        response = requests.get(page_url)
-        soup = BeautifulSoup(response.content, 'html.parser')
-        summary_text = next(p.get_text() for p in soup.find_all("p") if len(p.get_text()) > 75)
-        summary_text = summary_text[:200] #get substring for faster processing and other issues
-        print("Using html request for: " + page_url)
-
-
+    # if len(summary_text) == 0:
+    #     response = requests.get(page_url)
+    #     soup = BeautifulSoup(response.content, 'html.parser')
+    #     summary_text = next(p.get_text() for p in soup.find_all("p") if len(p.get_text()) > 75)
+    #     summary_text = summary_text[:200] #get substring for faster processing and other issues
+    #     print("Using html request for: " + page_url)
 
     months_list = ["January", "February", "March", "April", "May", "June", 
                    "July", "August", "September", "October", "November", "December"]
@@ -111,7 +110,7 @@ def get_politician_bday(page_url, congress_start_date=None):
     #check for (year – month year)
     elif (len(year_list) > 0 and len(month_year_list) > 0 and
             (first_parenthesis_index < summary_text.find(year_list[0])
-             < len(month_year_list[0]))
+             < summary_text.find(month_year_list[0]) < closing_parenthesis_index)
             ):
         matches.append(year_list[0])
         print("(year – month year): " + page_url)
@@ -125,10 +124,15 @@ def get_politician_bday(page_url, congress_start_date=None):
         matches += year_list[:2]
         print("(year – year): " + page_url)
 
-
-    elif "unknown" in summary_text.lower():
+    #check for (birth unknown)
+    elif first_parenthesis_index < summary_text.lower().find("unknown") < closing_parenthesis_index:
         matches.append("")
         print("unknown: " + page_url)
+
+    #check for (died [date])
+    elif first_parenthesis_index < summary_text.lower().find("died") < closing_parenthesis_index:
+        matches.append("")
+        print("only has death date: " + page_url)
 
     else: #assuming there is a parenthesis around a date; no word "born" though
         # Regular expression pattern to match "Month day, year" within parentheses
@@ -139,8 +143,17 @@ def get_politician_bday(page_url, congress_start_date=None):
             if first_parenthesis_index < index < closing_parenthesis_index:
                 matches.append(possible_match)
         matches.append("")
-        print("full date without born: " + page_url)
-        print("match6: " +  str(matches))
+
+        cases_to_ignore = ["https://en.wikipedia.org/wiki/John_Paterson_(New_York_politician)",
+                           "https://en.wikipedia.org/wiki/John_Laurance",
+                           "https://en.wikipedia.org/wiki/Abram_Trigg",
+                           "https://en.wikipedia.org/wiki/John_Rhea",
+                           "https://en.wikipedia.org/wiki/Samuel_Smith_(Pennsylvania_politician)",
+                           "https://en.wikipedia.org/wiki/Ezra_Baker",
+                           "https://en.wikipedia.org/wiki/Doug_Lamborn"]
+        if page_url not in cases_to_ignore:
+            print("UNCAPTURED CASE FOUND: " + page_url)
+            print("match text: " +  str(matches))
 
  
     bday_text = matches[0].strip() if len(matches) > 0 else ""
@@ -148,14 +161,20 @@ def get_politician_bday(page_url, congress_start_date=None):
     bday = process_unformatted_bday_text(bday_text.strip(), page_url)
     # print(str(matches) + ":\t" + bday)
     if (is_valid_date(bday) == False):
-        if page_url == "https://en.wikipedia.org/wiki/Doug_Lamborn": #having "born" in name messes up function
-            bday = "May 24, 1954"
+        if page_url == "https://en.wikipedia.org/wiki/John_Paterson_(New_York_politician)": #a pair of preceding parenthesis
+            bday = "January 1, 1744"
         elif page_url == "https://en.wikipedia.org/wiki/John_Laurance": #a pair of parenthesis before dob for nickname
             bday = "January 1, 1750"
-        # elif page_url == "https://en.wikipedia.org/wiki/Daniel_Morgan": #has a hyphen instead of en-dash
-        #     bday = "January 1, 1736"
         elif page_url == "https://en.wikipedia.org/wiki/Abram_Trigg": #has an unknown date of death
             bday = "January 1, 1750"
+        elif page_url == "https://en.wikipedia.org/wiki/John_Rhea": #a pair of preceding parenthesis
+            bday = "January 1, 1753"
+        elif page_url == "https://en.wikipedia.org/wiki/Samuel_Smith_(Pennsylvania_politician)": #(before year - year)
+            bday = None
+        elif page_url == "https://en.wikipedia.org/wiki/Ezra_Baker": #no parentheses to indicate birthday
+            bday = "January 1, 1765"
+        elif page_url == "https://en.wikipedia.org/wiki/Doug_Lamborn": #having "born" in name messes up function
+            bday = "May 24, 1954"
 
         else:
             print("Invalid/Unknown Date for: " + page_url) 
@@ -238,62 +257,3 @@ def is_valid_date(date_string, date_format="%B %d, %Y"):
         return False
     except TypeError:
         return False
-
-
-
-
-
-
-#edge cases to work on
-
-# "https://en.wikipedia.org/wiki/William_Shepard" doable but weird
-# "https://en.wikipedia.org/wiki/Daniel_Morgan"  ;broken; to fix; has hyphen instend of en-dash
-# "https://en.wikipedia.org/wiki/Abram_Trigg" ;broken; to fix; has unknown as date of dead
-
-#text length considerations below
-
-# "https://en.wikipedia.org/wiki/Philip_Key_(U.S._politician)"  #summary text is only 96 characters
-# "https://en.wikipedia.org/wiki/John_Sevier" #there is another text before sumamry text that is 73 characters
-
-#test cases below
-
-# print(get_politician_bday("https://en.wikipedia.org/wiki/Oliver_Ellsworth")) #full date to full date
-# get_politician_bday("https://en.wikipedia.org/wiki/William_Smith_(South_Carolina_senator)") #has "c. [year]"
-# print(get_politician_bday("https://en.wikipedia.org/wiki/John_Vining")) #has full date to month year
-# print(get_politician_bday("https://en.wikipedia.org/wiki/Peter_Van_Gaasbeck")) #full date to year
-# get_politician_bday("https://en.wikipedia.org/wiki/John_Henry_(Maryland_politician)") #has "month year to full date"
-# get_politician_bday("https://en.wikipedia.org/wiki/Cornelius_C._Schoonmaker") #month year - month year
-# print(get_politician_bday("https://en.wikipedia.org/wiki/Andrew_Moore_(politician)"))#year - full date
-# get_politician_bday("https://en.wikipedia.org/wiki/John_Edwards_(Kentucky_politician)") # year - year
-
-# https://en.wikipedia.org/wiki/Philip_Schuyler  #has a hyphen instead of en-dash; still works
-
-page_url = "https://en.wikipedia.org/wiki/Frederick_Frelinghuysen_(1753%E2%80%931804)" #does not have summary
-# page_url = "https://en.wikipedia.org/wiki/Peter_Silvester_(1734%E2%80%931808)" #has encrypted URL
-# page_url = "https://en.wikipedia.org/wiki/James_Lloyd_(Maryland_politician)"
-wiki_wiki = wikipediaapi.Wikipedia('Congress Wiki Project(dustintran36@gmail.com)', 'en')
-page_title = page_url.split("wiki/")[1]
-print(page_title)
-page_title = urllib.parse.unquote(page_title)
-print(page_title)
-page_py = wiki_wiki.page(page_title)
-
-
-if page_py.exists() and page_py.redirect:
-    # Follow the redirection
-    print("redirected")
-    page_py = wiki_wiki.page(page_py.redirect)
-# summary_text = page_py.summary
-# print(len(summary_text))
-
-
-# response = requests.get(page_url)
-# soup = BeautifulSoup(response.content, 'html.parser')
-
-# summary_text = next(p.get_text() for p in soup.find_all("p") if len(p.get_text()) > 75)
-# print(summary_text)
-# print(len(summary_text))
-# print(summary_text)
-# print(get_politician_bday(page_url))
-
-
