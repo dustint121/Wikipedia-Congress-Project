@@ -181,7 +181,7 @@ for congress in congress_dict:
     congress_num = congress
     congress_URL = congress_dict[congress_num]["URL"]
     congress_start_date = congress_dict[congress_num]["start_date"]
-    if 0 < congress_num:
+    if 0 < congress_num < 6:
         result = get_congresspeople_for_a_congress(congress_URL, congress_start_date)
     # count += len(result)
     # print(count)

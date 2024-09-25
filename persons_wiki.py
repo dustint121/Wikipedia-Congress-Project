@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import re
 from datetime import datetime
 import wikipediaapi
+import urllib.parse
 
 def get_politician_bday(page_url, congress_start_date=None):
 #NOTE: TRY WIKIAPI TO GET SUMMARY TEXT INSTEAD.
@@ -10,7 +11,9 @@ def get_politician_bday(page_url, congress_start_date=None):
     #return the first set of text that exceeds 75 characters; should be the summary section
     wiki_wiki = wikipediaapi.Wikipedia('Congress Wiki Project(dustintran36@gmail.com)', 'en')
     page_title = page_url.split("wiki/")[1]
+    page_title = urllib.parse.unquote(page_title) #remove possible encryption that wikiapi can't handle
     page_py = wiki_wiki.page(page_title)
+
     summary_text = page_py.summary[:200]
 
     if len(summary_text) == 0:
@@ -48,7 +51,7 @@ def get_politician_bday(page_url, congress_start_date=None):
     #check for (month day, year – month day, year)
     elif (len(full_dates_list) >= 2 and
             (first_parenthesis_index < summary_text.find(full_dates_list[0])
-            < en_dash_index < summary_text.find(full_dates_list[1]) < closing_parenthesis_index
+            < summary_text.find(full_dates_list[1]) < closing_parenthesis_index
             )
         ): 
         matches += full_dates_list
@@ -58,7 +61,7 @@ def get_politician_bday(page_url, congress_start_date=None):
     #check for (month day, year – month year)
     elif (len(full_dates_list) >= 1 and len(month_year_list) >= 1 and
             (first_parenthesis_index < summary_text.find(full_dates_list[0])
-            < en_dash_index < summary_text.find(month_year_list[0]) < closing_parenthesis_index
+            < summary_text.find(month_year_list[0]) < closing_parenthesis_index
             )
           ):
         matches += month_year_list
@@ -70,7 +73,7 @@ def get_politician_bday(page_url, congress_start_date=None):
     #check for (month day, year – year)
     elif (len(full_dates_list) >= 1 and len(year_list) >= 1 and
             (first_parenthesis_index < summary_text.find(full_dates_list[0])
-            < en_dash_index < summary_text.find(year_list[0]) < closing_parenthesis_index
+            < summary_text.find(year_list[0]) < closing_parenthesis_index
             )
           ):
         matches += year_list
@@ -79,7 +82,7 @@ def get_politician_bday(page_url, congress_start_date=None):
     #check for (month year – month day, year)
     elif (len(month_year_list) >= 1 and len(full_dates_list) >= 1 and
             (first_parenthesis_index < summary_text.find(month_year_list[0])
-            < en_dash_index < summary_text.find(full_dates_list[0]) < closing_parenthesis_index
+            < summary_text.find(full_dates_list[0]) < closing_parenthesis_index
             )
           ):
         matches += month_year_list
@@ -91,7 +94,7 @@ def get_politician_bday(page_url, congress_start_date=None):
     elif (len(month_year_list) >= 2 and 
             (
                 first_parenthesis_index < summary_text.find(month_year_list[0])
-                < en_dash_index < summary_text.find(month_year_list[1]) < closing_parenthesis_index
+                < summary_text.find(month_year_list[1]) < closing_parenthesis_index
             )
           ):
         matches += month_year_list
@@ -100,7 +103,7 @@ def get_politician_bday(page_url, congress_start_date=None):
     #check for (year – month day, year)
     elif (len(year_list) > 0 and len(full_dates_list) > 0 and
             (first_parenthesis_index < summary_text.find(year_list[0])
-             < en_dash_index < summary_text.find(full_dates_list[0]) < closing_parenthesis_index)
+             < summary_text.find(full_dates_list[0]) < closing_parenthesis_index)
             ):
         matches.append(year_list[0])
         # print("(year – full date): " + page_url)
@@ -108,7 +111,7 @@ def get_politician_bday(page_url, congress_start_date=None):
     #check for (year – month year)
     elif (len(year_list) > 0 and len(month_year_list) > 0 and
             (first_parenthesis_index < summary_text.find(year_list[0])
-             < en_dash_index < len(month_year_list[0]))
+             < len(month_year_list[0]))
             ):
         matches.append(year_list[0])
         print("(year – month year): " + page_url)
@@ -117,7 +120,7 @@ def get_politician_bday(page_url, congress_start_date=None):
     #check for (year - year)
     elif (len(year_list) >= 2 and
            (first_parenthesis_index < summary_text.find(year_list[0]) 
-            < en_dash_index < summary_text.find(year_list[1]) < closing_parenthesis_index) 
+            < summary_text.find(year_list[1]) < closing_parenthesis_index) 
           ):
         matches += year_list[:2]
         print("(year – year): " + page_url)
@@ -149,8 +152,8 @@ def get_politician_bday(page_url, congress_start_date=None):
             bday = "May 24, 1954"
         elif page_url == "https://en.wikipedia.org/wiki/John_Laurance": #a pair of parenthesis before dob for nickname
             bday = "January 1, 1750"
-        elif page_url == "https://en.wikipedia.org/wiki/Daniel_Morgan": #has a hyphen instead of en-dash
-            bday = "January 1, 1736"
+        # elif page_url == "https://en.wikipedia.org/wiki/Daniel_Morgan": #has a hyphen instead of en-dash
+        #     bday = "January 1, 1736"
         elif page_url == "https://en.wikipedia.org/wiki/Abram_Trigg": #has an unknown date of death
             bday = "January 1, 1750"
 
@@ -264,19 +267,30 @@ def is_valid_date(date_string, date_format="%B %d, %Y"):
 # get_politician_bday("https://en.wikipedia.org/wiki/John_Edwards_(Kentucky_politician)") # year - year
 
 # https://en.wikipedia.org/wiki/Philip_Schuyler  #has a hyphen instead of en-dash; still works
-page_url = "https://en.wikipedia.org/wiki/Peter_Silvester_(1734%E2%80%931808)" #does not have summary
+
+page_url = "https://en.wikipedia.org/wiki/Frederick_Frelinghuysen_(1753%E2%80%931804)" #does not have summary
+# page_url = "https://en.wikipedia.org/wiki/Peter_Silvester_(1734%E2%80%931808)" #has encrypted URL
 # page_url = "https://en.wikipedia.org/wiki/James_Lloyd_(Maryland_politician)"
 wiki_wiki = wikipediaapi.Wikipedia('Congress Wiki Project(dustintran36@gmail.com)', 'en')
 page_title = page_url.split("wiki/")[1]
+print(page_title)
+page_title = urllib.parse.unquote(page_title)
+print(page_title)
 page_py = wiki_wiki.page(page_title)
-summary_text = page_py.summary
+
+
+if page_py.exists() and page_py.redirect:
+    # Follow the redirection
+    print("redirected")
+    page_py = wiki_wiki.page(page_py.redirect)
+# summary_text = page_py.summary
 # print(len(summary_text))
 
 
-response = requests.get(page_url)
-soup = BeautifulSoup(response.content, 'html.parser')
+# response = requests.get(page_url)
+# soup = BeautifulSoup(response.content, 'html.parser')
 
-summary_text = next(p.get_text() for p in soup.find_all("p") if len(p.get_text()) > 75)
+# summary_text = next(p.get_text() for p in soup.find_all("p") if len(p.get_text()) > 75)
 # print(summary_text)
 # print(len(summary_text))
 # print(summary_text)
