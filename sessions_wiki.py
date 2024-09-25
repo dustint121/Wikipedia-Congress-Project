@@ -180,10 +180,11 @@ count = 0
 for congress in congress_dict:
     congress_num = congress
     congress_URL = congress_dict[congress_num]["URL"]
-    if congress_num >= 117:
+    if congress_num > 117:
         result = get_congresspeople_for_a_congress(congress_URL)
     # count += len(result)
     # print(count)
 
 
 # get_all_parties_dict()
+
