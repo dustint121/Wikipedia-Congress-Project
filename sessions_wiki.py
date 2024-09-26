@@ -1,7 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
 import re
-
+import os
+import json
 import persons_wiki
 
 #has 3 tables for congressional session: past, current, future
@@ -107,7 +108,7 @@ def get_all_parties_dict():
 
 
 
-def get_congresspeople_for_a_congress(page_url, congress_end_date=None):
+def get_congresspeople_for_a_congress(page_url, congress_start_date=None):
     response = requests.get(page_url)
     soup = BeautifulSoup(response.content, 'html.parser')
     print("\n" + page_url)
@@ -129,9 +130,7 @@ def get_congresspeople_for_a_congress(page_url, congress_end_date=None):
     # if (check_senate and check_representative) is not True:
     #     print("Issue")
 
-
-    congressmen_data = []
-
+    all_congresspersons_data_list = []
     type = "Senator" #will change to "Representative" at bottom of while loop for 2nd table
     for table in tables:
         states = [heading.find("h4").text.strip() for heading in table.find_all('div', class_='mw-heading4')]
@@ -170,14 +169,18 @@ def get_congresspeople_for_a_congress(page_url, congress_end_date=None):
                         continue
 
 
-                    persons_wiki.get_politician_data(URL)
-                    congressmen_data.append({'name':name, 'URL': URL,'party': party, 'type': type, 'state': state})
+
+                    individual_congressperson_data_dict = {'name':name, 'URL': URL,'party': party, 
+                            'type': type, 'state': state}
+                    new_data = (persons_wiki.get_politician_data(URL, congress_start_date))
+                    individual_congressperson_data_dict.update(new_data)
+                    all_congresspersons_data_list.append(individual_congressperson_data_dict)
 
                     # print(URL)
 
 
         type = "Representative"
-    return congressmen_data
+    return all_congresspersons_data_list
 
 
 
@@ -188,8 +191,18 @@ for congress in congress_dict:
     congress_num = congress
     congress_URL = congress_dict[congress_num]["URL"]
     congress_start_date = congress_dict[congress_num]["start_date"]
+    # print(str(congress_num) + ": " + congress_start_date)
+
     if 0 <= congress_num <= 5:
-        result = get_congresspeople_for_a_congress(congress_URL, congress_start_date)
+        data = get_congresspeople_for_a_congress(congress_URL, congress_start_date)
+        file_path = "json_data/" + str(congress_num) + ".json"
+        # Ensure the directory exists
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+        # print(data)
+        if not os.path.isfile(file_path):
+            with open(file_path, 'w') as file:
+                json.dump(data, file, indent=4)
     # count += len(result)
     # print(count)
 

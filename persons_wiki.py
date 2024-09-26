@@ -12,8 +12,6 @@ def get_politician_data(page_url, congress_start_date=None):
     page_title = page_url.split("wiki/")[1]
     page_py = wiki_wiki.page(page_title)
 
-    # name_start_text_index = page_py.summary.find(page_title.split("_")[0])
-    # summary_text = page_py.summary[name_start_text_index: name_start_text_index+ 200]
     summary_text = page_py.summary[:200]
     starting_parenthesis_index, closing_parenthesis_index = get_valid_index_range_for_summary_text(summary_text)
     summary_text = page_py.summary[starting_parenthesis_index : closing_parenthesis_index]
@@ -25,12 +23,9 @@ def get_politician_data(page_url, congress_start_date=None):
     month_year_list = re.findall(r'\b\w+\s\d{4}\b', summary_text)
     month_year_list = [month_year for month_year in month_year_list if month_year.split()[0] in months_list]
 
-    # invalid_dates_check = month_year_list + full_dates_list
-    # year_list = get_year_list(summary_text, month_year_list + full_dates_list)
     year_list = re.findall(r'\d{4}', summary_text)
     invalid_years_check = "".join(month_year_list) + "".join(full_dates_list)
     year_list = [year for year in year_list if year not in invalid_years_check]
-
     # print(full_dates_list)
     # print(month_year_list)
     # print(year_list)
@@ -39,6 +34,10 @@ def get_politician_data(page_url, congress_start_date=None):
     temp = starting_parenthesis_index
     starting_parenthesis_index -= temp
     closing_parenthesis_index -= temp
+
+    sex = next(({"she": "female", "he": "male"}[word] 
+            for word in page_py.summary.lower().split() if word in {"she", "he"}), None)  
+
 
     bday_text = ""
     death_date_text = ""
@@ -165,7 +164,6 @@ def get_politician_data(page_url, congress_start_date=None):
                     "https://en.wikipedia.org/wiki/David_Marchand",
                     "https://en.wikipedia.org/wiki/Martin_Van_Buren",
                     "https://en.wikipedia.org/wiki/Henry_William_Connor",
-                    "https://en.wikipedia.org/wiki/Davy_Crockett",
                     "https://en.wikipedia.org/wiki/Jacob_Hibshman",
                     "https://en.wikipedia.org/wiki/Jacob_Burnet",
                     "https://en.wikipedia.org/wiki/Doug_Lamborn",
@@ -196,8 +194,6 @@ def get_politician_data(page_url, congress_start_date=None):
             bday = "December 5, 1782"
         elif page_url == "https://en.wikipedia.org/wiki/Henry_William_Connor": #year_list is improperly filtered
             bday = "August 5, 1793"
-        # elif page_url == "https://en.wikipedia.org/wiki/Davy_Crockett": #summary text starts with "David", not "Davy"
-        #     bday = "August 17, 1786"
         elif page_url == "https://en.wikipedia.org/wiki/Jacob_Hibshman": #additional text in front of summary
             bday = "January 31, 1772"
         elif page_url == "https://en.wikipedia.org/wiki/Jacob_Burnet": #a pair of preceding parenthesis
@@ -213,17 +209,26 @@ def get_politician_data(page_url, congress_start_date=None):
             else:
                 print("\tNone")
     age = None
+    age_at_death = None
     #do a last check; bday should be before congress start and min difference in years should be 25
     if congress_start_date != None:
         date_format = "%B %d, %Y"
         congress_start = datetime.strptime(congress_start_date, date_format)
         bday_date = datetime.strptime(bday, date_format)
+        
+
         if bday_date > congress_start:
             print("Invalid BDay: After Congress Start")
+        else:
             age = (congress_start - bday_date).days//365
             if age < 25:
                 print("Invalid BDay:Under 25")
-    return bday, age, death_date
+        if death_date != None:
+            death_day = datetime.strptime(death_date, date_format)
+            age_at_death = (death_day - bday_date).days//365
+
+    data = {"birth_date":bday, "death_date": death_date, "age_at_congress": age, "age_at_death": age_at_death, "sex": sex}
+    return data
 
 
 
@@ -279,18 +284,10 @@ def is_valid_date(date_string, date_format="%B %d, %Y"):
         return False
     except TypeError:
         return False
-    
-
-
-
-
 
 def get_valid_index_range_for_summary_text(summary_text):
-    starting_parenthesis_index = summary_text.find('(')
-    closing_parenthesis_index = -1
-
-    if starting_parenthesis_index == -1:
-        return -1, -1
+    if summary_text.find('(') == -1:
+        return 0, 0
     stack = []
     indices = []
     for i, char in enumerate(summary_text):
@@ -307,4 +304,4 @@ def get_valid_index_range_for_summary_text(summary_text):
             date_index = summary_text.find(date)
             if parentheses[0] < date_index < parentheses[1]:
                 return parentheses 
-    return -1, -1
+    return 0, 0
