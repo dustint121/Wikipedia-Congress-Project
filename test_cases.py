@@ -4,9 +4,13 @@ import urllib.parse
 #edge cases to work on
 
 # "https://en.wikipedia.org/wiki/William_Shepard" doable but weird
-# "https://en.wikipedia.org/wiki/Abram_Trigg" ;broken; fixed; has unknown as date of dead
 
 #https://en.wikipedia.org/wiki/Jacob_Hibshman  ; additional text in front
+#"https://en.wikipedia.org/wiki/John_Paterson_(New_York_politician)": #a pair of preceding parenthesis
+
+#"https://en.wikipedia.org/wiki/Henry_William_Connor" #dates after parentheses can mess things up; will not get most accurate
+#page_url == "https://en.wikipedia.org/wiki/Doug_Lamborn": #having "born" in name messes up function
+
 
 #text length considerations below
 # "https://en.wikipedia.org/wiki/Philip_Key_(U.S._politician)"  #summary text is only 96 characters
@@ -41,12 +45,12 @@ import urllib.parse
 
 
 
-page_url = "https://en.wikipedia.org/wiki/Robert_Ramsey_(congressman)"
-wiki_wiki = wikipediaapi.Wikipedia('Congress Wiki Project(dustintran36@gmail.com)', 'en')
-page_title = page_url.split("wiki/")[1]
-page_title = urllib.parse.unquote(page_title)
-page_py = wiki_wiki.page(page_title)
-summary_text = page_py.summary
+page_url = "https://en.wikipedia.org/wiki/Doug_Lamborn" #a pair of preceding parenthesis
+# wiki_wiki = wikipediaapi.Wikipedia('Congress Wiki Project(dustintran36@gmail.com)', 'en')
+# page_title = page_url.split("wiki/")[1]
+# page_title = urllib.parse.unquote(page_title)
+# page_py = wiki_wiki.page(page_title)
+# summary_text = page_py.summary
 # print(len(summary_text))
 # print(summary_text)
 
@@ -54,7 +58,7 @@ summary_text = page_py.summary
 # a, b = persons_wiki.get_valid_index_range_for_summary_text(summary_text)
 # print(a)
 # print(b)
-print(persons_wiki.get_politician_bday(page_url))
+print(persons_wiki.get_politician_data(page_url))
 
 
 

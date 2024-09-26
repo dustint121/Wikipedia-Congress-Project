@@ -108,7 +108,7 @@ def get_all_parties_dict():
 
 
 
-def get_congresspeople_for_a_congress(page_url, congress_start_date=None):
+def get_congresspeople_for_a_congress(page_url, congress_num, congress_start_date=None):
     response = requests.get(page_url)
     soup = BeautifulSoup(response.content, 'html.parser')
     print("\n" + page_url)
@@ -129,6 +129,8 @@ def get_congresspeople_for_a_congress(page_url, congress_start_date=None):
     # check_representative = representative_table.find('div', class_="mw-heading mw-heading4").find("h4").get("id") in ["Alabama_2", "Connecticut_2"]
     # if (check_senate and check_representative) is not True:
     #     print("Issue")
+
+    congress_parties_dict = get_all_parties_dict_fast()
 
     all_congresspersons_data_list = []
     type = "Senator" #will change to "Representative" at bottom of while loop for 2nd table
@@ -167,13 +169,24 @@ def get_congresspeople_for_a_congress(page_url, congress_start_date=None):
                         print("Error with Nullifier Party Detected; Being Skipped")
                         print("Nullifier: " + name + "; " + party + "; " + type + "; " + state)
                         continue
-
+                    
+                    possible_party_full_name = congress_parties_dict[congress_num].get(party)
+                    if possible_party_full_name == None:
+                        if party == "DFL": #the Minnesota subset of the Democratic Party
+                            party = "Democratic"
+                        elif name == "Joe_Manchin" and congress_num == 118: #Democratic until May 31, 2024
+                            party = "Democratic"
+                        else:
+                            print("Party Abbrev. Error: " + party + "; " + URL)
+                    else:
+                        party = possible_party_full_name
 
 
                     individual_congressperson_data_dict = {'name':name, 'URL': URL,'party': party, 
                             'type': type, 'state': state}
                     new_data = (persons_wiki.get_politician_data(URL, congress_start_date))
                     individual_congressperson_data_dict.update(new_data)
+
                     all_congresspersons_data_list.append(individual_congressperson_data_dict)
 
                     # print(URL)
@@ -193,9 +206,9 @@ for congress in congress_dict:
     congress_start_date = congress_dict[congress_num]["start_date"]
     # print(str(congress_num) + ": " + congress_start_date)
 
-    if 0 <= congress_num <= 5:
-        data = get_congresspeople_for_a_congress(congress_URL, congress_start_date)
-        file_path = "json_data/" + str(congress_num) + ".json"
+    if 117 <= congress_num <= 118:
+        data = get_congresspeople_for_a_congress(congress_URL, congress_num, congress_start_date)
+        file_path = "json_data/congress" + str(congress_num) + ".json"
         # Ensure the directory exists
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
