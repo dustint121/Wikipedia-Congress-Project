@@ -164,10 +164,17 @@ def get_congresspeople_for_a_congress(page_url, congress_end_date=None):
                         if name == "William G. McAdoo": #edge case for Senate, 73th congress
                             match = re.search(r'\((.*?)\)', "(D)")
                     party = match.group(1)
+                    if URL == "https://en.wikipedia.org/wiki/Nullifier_Party": #found in 23rd congress
+                        print("Error with Nullifier Party Detected; Being Skipped")
+                        print("Nullifier: " + name + "; " + party + "; " + type + "; " + state)
+                        continue
+
+
+                    persons_wiki.get_politician_data(URL)
                     congressmen_data.append({'name':name, 'URL': URL,'party': party, 'type': type, 'state': state})
 
                     # print(URL)
-                    persons_wiki.get_politician_bday(URL)
+
 
         type = "Representative"
     return congressmen_data
@@ -181,7 +188,7 @@ for congress in congress_dict:
     congress_num = congress
     congress_URL = congress_dict[congress_num]["URL"]
     congress_start_date = congress_dict[congress_num]["start_date"]
-    if 20 <= congress_num <= 20:
+    if 0 <= congress_num <= 5:
         result = get_congresspeople_for_a_congress(congress_URL, congress_start_date)
     # count += len(result)
     # print(count)
