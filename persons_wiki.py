@@ -7,15 +7,13 @@ import urllib.parse
 
 def get_politician_bday(page_url, congress_start_date=None):
 #NOTE: TRY WIKIAPI TO GET SUMMARY TEXT INSTEAD.
-
-    #return the first set of text that exceeds 75 characters; should be the summary section
     wiki_wiki = wikipediaapi.Wikipedia('Congress Wiki Project(dustintran36@gmail.com)', 'en')
     page_url = urllib.parse.unquote(page_url) #remove possible URL encryption that wikiapi can't handle
     page_title = page_url.split("wiki/")[1]
-    # page_title = urllib.parse.unquote(page_title) #remove possible encryption that wikiapi can't handle
     page_py = wiki_wiki.page(page_title)
 
-    summary_text = page_py.summary[:200]
+    name_start_text_index = page_py.summary.find(page_title.split("_")[0])
+    summary_text = page_py.summary[name_start_text_index: name_start_text_index+ 200]
 
     # if len(summary_text) == 0:
     #     response = requests.get(page_url)
@@ -38,7 +36,11 @@ def get_politician_bday(page_url, congress_start_date=None):
 
     first_parenthesis_index = summary_text.find('(')
     closing_parenthesis_index = summary_text.find(')')
-    en_dash_index =  summary_text.find('–')
+    # en_dash_index =  summary_text.find('–')
+
+    # print(summary_text[:50])
+    # print(full_dates_list)
+
 
     matches = []
     #format: (born Month day, year)
@@ -76,7 +78,7 @@ def get_politician_bday(page_url, congress_start_date=None):
             )
           ):
         matches += year_list
-        print("(month day, year – year): " + page_url)
+        # print("(month day, year – year): " + page_url)
 
     #check for (month year – month day, year)
     elif (len(month_year_list) >= 1 and len(full_dates_list) >= 1 and
@@ -99,6 +101,15 @@ def get_politician_bday(page_url, congress_start_date=None):
         matches += month_year_list
         # print("(month year – month year): " + page_url)
 
+    #check for month year - year
+    elif (len(month_year_list) > 0 and len(year_list) > 0 and
+            (first_parenthesis_index < summary_text.find(month_year_list[0])
+             < summary_text.find(year_list[0]) < closing_parenthesis_index)
+            ):
+        matches += month_year_list
+        print("(month year - year): " + page_url)
+
+
     #check for (year – month day, year)
     elif (len(year_list) > 0 and len(full_dates_list) > 0 and
             (first_parenthesis_index < summary_text.find(year_list[0])
@@ -113,18 +124,20 @@ def get_politician_bday(page_url, congress_start_date=None):
              < summary_text.find(month_year_list[0]) < closing_parenthesis_index)
             ):
         matches.append(year_list[0])
-        print("(year – month year): " + page_url)
+        # print("(year – month year): " + page_url)
 
 
     #check for (year - year)
     elif (len(year_list) >= 2 and
            (first_parenthesis_index < summary_text.find(year_list[0]) 
             < summary_text.find(year_list[1]) < closing_parenthesis_index) 
-          ):
+          ): 
         matches += year_list[:2]
         print("(year – year): " + page_url)
+        if summary_text.find("before") > first_parenthesis_index:
+            print("Double check for before word")
 
-    #check for (birth unknown)
+    #check for unknown birth
     elif first_parenthesis_index < summary_text.lower().find("unknown") < closing_parenthesis_index:
         matches.append("")
         print("unknown: " + page_url)
@@ -150,7 +163,13 @@ def get_politician_bday(page_url, congress_start_date=None):
                            "https://en.wikipedia.org/wiki/John_Rhea",
                            "https://en.wikipedia.org/wiki/Samuel_Smith_(Pennsylvania_politician)",
                            "https://en.wikipedia.org/wiki/Ezra_Baker",
-                           "https://en.wikipedia.org/wiki/Doug_Lamborn"]
+                           "https://en.wikipedia.org/wiki/David_Marchand",
+                           "https://en.wikipedia.org/wiki/Martin_Van_Buren",
+                           "https://en.wikipedia.org/wiki/Henry_William_Connor",
+                           "https://en.wikipedia.org/wiki/Davy_Crockett",
+                           "https://en.wikipedia.org/wiki/Joseph_F._Wingate",
+                           "https://en.wikipedia.org/wiki/Doug_Lamborn",
+                           ]
         if page_url not in cases_to_ignore:
             print("UNCAPTURED CASE FOUND: " + page_url)
             print("match text: " +  str(matches))
@@ -173,6 +192,16 @@ def get_politician_bday(page_url, congress_start_date=None):
             bday = None
         elif page_url == "https://en.wikipedia.org/wiki/Ezra_Baker": #no parentheses to indicate birthday
             bday = "January 1, 1765"
+        elif page_url == "https://en.wikipedia.org/wiki/David_Marchand": #no parentheses to indicate birthday
+            bday = "January 31, 1772"
+        elif page_url == "https://en.wikipedia.org/wiki/Martin_Van_Buren": #a pair of preceding parenthesis
+            bday = "December 5, 1782"
+        elif page_url == "https://en.wikipedia.org/wiki/Henry_William_Connor": #year_list is improperly written
+            bday = "August 5, 1793"
+        elif page_url == "https://en.wikipedia.org/wiki/Davy_Crockett": #summary text starts with "David", not "Davy"
+            bday = "August 17, 1786"
+        elif page_url == "https://en.wikipedia.org/wiki/Joseph_F._Wingate": #unknown date of death
+            bday = "June 29, 1786"
         elif page_url == "https://en.wikipedia.org/wiki/Doug_Lamborn": #having "born" in name messes up function
             bday = "May 24, 1954"
 
