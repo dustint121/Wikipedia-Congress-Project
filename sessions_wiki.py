@@ -216,6 +216,4 @@ for congress in congress_dict:
     # count += len(result)
     # print(count)
 
-
-# get_all_parties_dict()
-
+#NEED TO LOOK AT 10TH CONGRESS; John Porter;  
