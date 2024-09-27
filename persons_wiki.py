@@ -30,15 +30,7 @@ def get_politician_data(page_url, congress_start_date=None, congress_num=None):
     closing_parenthesis_index -= starting_parenthesis_index
     starting_parenthesis_index -= starting_parenthesis_index
 
-    sex = None
-    if congress_num != None and congress_num >= 65: #first female congress was in 65th congress
-        sex_dict = {"she": "female", "he": "male", "his" : "male", "her" : "female"}
-        for word in summary_text.split():
-            if word in list(sex_dict.keys()):
-                sex = sex_dict[word]
-                break
-    else:
-        sex = "male"
+    sex = get_sex_from_wiki_page(wiki_page=page_py,congress_num=congress_num)
     if congress_num != None and sex == None:
         print("Can't find sex: " + page_url)
 
@@ -167,6 +159,9 @@ def get_politician_data(page_url, congress_start_date=None, congress_num=None):
         elif page_url not in cases_to_ignore:
             print("UNCAPTURED CASE TYPE FOUND: " + page_url)
 
+    if page_url == "https://en.wikipedia.org/wiki/Thomas_Terry_Davis": #(before year - full year)
+        bday_text = ""
+
     bday = process_unformatted_date_text(bday_text.strip(), page_url)
     death_date = process_unformatted_date_text(death_date_text.strip(), page_url)
     # print(str(matches) + ":\t" + bday)
@@ -202,7 +197,7 @@ def get_politician_data(page_url, congress_start_date=None, congress_num=None):
         if death_day != None:
             age_at_death = (death_day - bday_date).days//365
 
-        data = {"birth_date":bday, "death_date": death_date, "age_at_congress": age, "age_at_death": age_at_death, "sex": sex}
+    data = {"birth_date":bday, "death_date": death_date, "age_at_congress": age, "age_at_death": age_at_death, "sex": sex}
     return data
 
 
@@ -280,3 +275,36 @@ def get_valid_index_range_for_summary_text(summary_text):
             if parentheses[0] < date_index < parentheses[1]:
                 return parentheses 
     return 0, 0
+
+
+
+#CONSIDER DOING PERCENTAGE RATHER THAN FIRST INSTANCE
+def get_sex_from_wiki_page(wiki_page, congress_num):
+    sex = None
+    if congress_num != None:
+        if congress_num >= 65: #first female congress was in 65th congress
+            sex_dict = {"she": "female", "he": "male", "his" : "male", "her" : "female"}
+            #only get first two section(including their subsections) after the summary
+            wiki_page_sections = []
+            if len(wiki_page.sections) > 0:
+                wiki_page_sections = get_all_wiki_text_by_section(wiki_page.sections[0:2])
+            wiki_page_sections.insert(0, wiki_page.summary.lower()) 
+            for section in wiki_page_sections:
+                if sex != None:
+                    break 
+                text = section.split()
+                for word in text:
+                    if word in list(sex_dict.keys()):
+                        sex = sex_dict[word]
+                        break      
+        else: #for congress 1-64
+            sex = "male"
+    return sex
+
+def get_all_wiki_text_by_section(sections):
+    section_list = []
+    for s in sections:
+            section_list.append(s.text.lower())
+            section_list += get_all_wiki_text_by_section(s.sections)
+    return section_list
+        

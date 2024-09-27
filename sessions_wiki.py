@@ -174,7 +174,7 @@ def get_congresspeople_for_a_congress(page_url, congress_num, congress_start_dat
                     if possible_party_full_name == None:
                         if party == "DFL": #the Minnesota subset of the Democratic Party
                             party = "Democratic"
-                        elif name == "Joe_Manchin" and congress_num == 118: #Democratic until May 31, 2024
+                        elif name == "Joe Manchin" and congress_num == 118: #Democratic until May 31, 2024
                             party = "Democratic"
                         else:
                             print("Party Abbrev. Error: " + party + "; " + URL)
@@ -184,7 +184,7 @@ def get_congresspeople_for_a_congress(page_url, congress_num, congress_start_dat
 
                     individual_congressperson_data_dict = {'name':name, 'URL': URL,'party': party, 
                             'type': type, 'state': state}
-                    new_data = (persons_wiki.get_politician_data(URL, congress_start_date))
+                    new_data = (persons_wiki.get_politician_data(URL, congress_start_date, congress_num))
                     individual_congressperson_data_dict.update(new_data)
 
                     all_congresspersons_data_list.append(individual_congressperson_data_dict)
@@ -206,16 +206,13 @@ for congress in congress_dict:
     congress_start_date = congress_dict[congress_num]["start_date"]
     # print(str(congress_num) + ": " + congress_start_date)
 
-    if 117 <= congress_num <= 118:
+    if 65 <= congress_num <= 65:
         data = get_congresspeople_for_a_congress(congress_URL, congress_num, congress_start_date)
         file_path = "json_data/congress" + str(congress_num) + ".json"
         # Ensure the directory exists
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
-
-        # print(data)
-        if not os.path.isfile(file_path):
-            with open(file_path, 'w') as file:
-                json.dump(data, file, indent=4)
+        with open(file_path, 'w') as file:
+            json.dump(data, file, indent=4)
     # count += len(result)
     # print(count)
 
