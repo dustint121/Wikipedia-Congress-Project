@@ -57,13 +57,8 @@ page_py = wiki_wiki.page(page_title)
 # print(len(summary_text))
 # print(summary_text)
 
-# print(persons_wiki.get_valid_index_range_for_summary_text(summary_text))
-# a, b = persons_wiki.get_valid_index_range_for_summary_text(summary_text)
-# print(a)
-# print(b)
-# print(persons_wiki.get_politician_data(page_url, congress_num=100, congress_start_date=None))
-
-
+# for s in page_py.sections:
+#     print(s.title)
 
 # print(page_py.sections[1])
 

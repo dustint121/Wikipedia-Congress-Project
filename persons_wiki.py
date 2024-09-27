@@ -32,13 +32,16 @@ def get_politician_data(page_url, congress_start_date=None, congress_num=None):
 
     sex = get_sex_from_wiki_page(wiki_page=page_py,congress_num=congress_num)
     if congress_num != None and sex == None:
-        print("Can't find sex: " + page_url)
+        if page_url == "https://en.wikipedia.org/wiki/Franklin_Ellsworth": #no gender references at all
+            sex = "male"
+        else:
+            print("Can't find sex: " + page_url)
 
 
     bday_text = ""
     death_date_text = ""
     #format: (born Month day, year)
-    if (summary_text.find("born") != -1 and
+    if (summary_text.find("born") != -1 and len(full_dates_list) == 1 and
         (starting_parenthesis_index < summary_text.find("born") < closing_parenthesis_index)):
         bday_text = full_dates_list[0]
         # print("(born Month day, year): " + page_url)
@@ -281,22 +284,26 @@ def get_valid_index_range_for_summary_text(summary_text):
 #CONSIDER DOING PERCENTAGE RATHER THAN FIRST INSTANCE
 def get_sex_from_wiki_page(wiki_page, congress_num):
     sex = None
+    male_count = 0
+    female_count = 0
     if congress_num != None:
         if congress_num >= 65: #first female congress was in 65th congress
-            sex_dict = {"she": "female", "he": "male", "his" : "male", "her" : "female"}
+            # sex_dict = {"she": "female", "he": "male", "his" : "male", "her" : "female"}
             #only get first two section(including their subsections) after the summary
             wiki_page_sections = []
             if len(wiki_page.sections) > 0:
                 wiki_page_sections = get_all_wiki_text_by_section(wiki_page.sections[0:2])
             wiki_page_sections.insert(0, wiki_page.summary.lower()) 
             for section in wiki_page_sections:
-                if sex != None:
-                    break 
                 text = section.split()
                 for word in text:
-                    if word in list(sex_dict.keys()):
-                        sex = sex_dict[word]
-                        break      
+                    if word in ["he", "him"]:
+                        male_count += 1
+                    elif word in ["she", "her"]:
+                        female_count += 1
+            total_count = male_count + female_count
+            if total_count > 0:
+                sex = "male" if male_count/total_count > 0.5 else "female" 
         else: #for congress 1-64
             sex = "male"
     return sex
@@ -304,6 +311,7 @@ def get_sex_from_wiki_page(wiki_page, congress_num):
 def get_all_wiki_text_by_section(sections):
     section_list = []
     for s in sections:
+        if s.title not in ["See also", "Notes", "References", "External links","External links"]:
             section_list.append(s.text.lower())
             section_list += get_all_wiki_text_by_section(s.sections)
     return section_list
