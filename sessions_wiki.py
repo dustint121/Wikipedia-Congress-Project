@@ -166,16 +166,35 @@ def get_congresspeople_for_a_congress(page_url, congress_num, congress_start_dat
                             match = re.search(r'\((.*?)\)', "(D)")
                     party = match.group(1)
                     if URL == "https://en.wikipedia.org/wiki/Nullifier_Party": #found in 23rd congress
-                        print("Error with Nullifier Party Detected; Being Skipped")
-                        print("Nullifier: " + name + "; " + party + "; " + type + "; " + state)
                         continue
-                    
+                    if URL == "https://en.wikipedia.org/wiki/Law_and_Order_Party_of_Rhode_Island": #found in 28rd congress
+                        continue                  
+                    if URL == "https://en.wikipedia.org/wiki/Independent_Democrat": #found in 32nd congress  
+                        continue
+                    if URL == "https://en.wikipedia.org/wiki/Liberal_Republican_Party_(United_States)": #found in 43th congress
+                        continue  
+                    if URL == "https://en.wikipedia.org/wiki/Democratic_Party_(United_States)": #found in 47th congress:
+                        continue
+
+                    if congress_num == 35 and name == "John C. Kunkel": #wrong URL; got grandson's URL
+                        URL = "https://en.wikipedia.org/wiki/John_Christian_Kunkel"
+
                     possible_party_full_name = congress_parties_dict[congress_num].get(party)
                     if possible_party_full_name == None:
                         if party == "DFL": #the Minnesota subset of the Democratic Party
                             party = "Democratic"
+                        elif party == "Anti-M":
+                            party = "Anti-Masonic"
+                        elif name == "States Rights D": #for Franklin H. Elmore of 25th congress
+                            party == "Democratic"
+                        elif party == "Ind. D":      #for Zadok Casey of 27th Congress
+                            party = "Independent Democrat"
+                        elif party in ["Ind. W", "IW"]:      
+                            party = "Independent Whig"                                   
                         elif name == "Joe Manchin" and congress_num == 118: #Democratic until May 31, 2024
                             party = "Democratic"
+                        elif party == "UA":
+                            party = "Unconditional Union"
                         else:
                             print("Party Abbrev. Error: " + party + "; " + URL)
                     else:
@@ -206,7 +225,7 @@ for congress in congress_dict:
     congress_start_date = congress_dict[congress_num]["start_date"]
     # print(str(congress_num) + ": " + congress_start_date)
 
-    if 65 <= congress_num <= 65:
+    if 50 <= congress_num <= 50:
         data = get_congresspeople_for_a_congress(congress_URL, congress_num, congress_start_date)
         file_path = "json_data/congress" + str(congress_num) + ".json"
         # Ensure the directory exists

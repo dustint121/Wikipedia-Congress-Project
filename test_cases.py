@@ -51,7 +51,7 @@ import urllib.parse
 
 
 
-page_url = "https://en.wikipedia.org/wiki/Knute_Nelson"
+page_url = "https://en.wikipedia.org/wiki/John_Brown_Gordon"
 wiki_wiki = wikipediaapi.Wikipedia('Congress Wiki Project(dustintran36@gmail.com)', 'en')
 page_title = page_url.split("wiki/")[1]
 page_title = urllib.parse.unquote(page_title)
@@ -65,10 +65,10 @@ page_py = wiki_wiki.page(page_title)
 
 # print(page_py.sections[1])
 
-print(persons_wiki.get_sex_from_wiki_page(page_py, 66, page_url))
+# print(persons_wiki.get_sex_from_wiki_page(page_py, 66, page_url))
 # print(persons_wiki.get_all_wiki_text_by_section(page_py.sections[0:3]))
 
-# print(persons_wiki.get_politician_data(page_url,None,9))
+print(persons_wiki.get_politician_data(page_url,None,43))
 
     # if len(summary_text) == 0:
     #     response = requests.get(page_url)

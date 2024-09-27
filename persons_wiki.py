@@ -1,9 +1,8 @@
-import requests
-from bs4 import BeautifulSoup
 import re
 from datetime import datetime
 import wikipediaapi
 import urllib.parse
+import random
 
 def get_politician_data(page_url, congress_start_date=None, congress_num=None):
     wiki_wiki = wikipediaapi.Wikipedia('Congress Wiki Project(dustintran36@gmail.com)', 'en')
@@ -40,6 +39,10 @@ def get_politician_data(page_url, congress_start_date=None, congress_num=None):
 
     bday_text = ""
     death_date_text = ""
+
+    if summary_text.lower().find("before") != -1:
+        print("found before; please double check: " + page_url)
+
     #format: (born Month day, year)
     if (summary_text.find("born") != -1 and len(full_dates_list) == 1 and
         (starting_parenthesis_index < summary_text.find("born") < closing_parenthesis_index)):
@@ -153,8 +156,19 @@ def get_politician_data(page_url, congress_start_date=None, congress_num=None):
         cases_to_ignore = [
                     "https://en.wikipedia.org/wiki/Ezra_Baker",
                     "https://en.wikipedia.org/wiki/David_Marchand",
+                    "https://en.wikipedia.org/wiki/Andrew_Boden",
+                    "https://en.wikipedia.org/wiki/Daniel_H._Miller",
+                    "https://en.wikipedia.org/wiki/John_Cramer_(representative)",
+                    "https://en.wikipedia.org/wiki/William_Allen_(governor)",
+                    "https://en.wikipedia.org/wiki/Jabez_Young_Jackson",
+                    "https://en.wikipedia.org/wiki/Ebenezer_J._Shields",
+                    "https://en.wikipedia.org/wiki/John_W._Noell",
+                    "https://en.wikipedia.org/wiki/Henry_H._Starkweather",
+                    "https://en.wikipedia.org/wiki/John_Brown_Gordon"
                     ]
-        if len(full_dates_list) > 0: #found a date in parenthesis
+        if page_url in cases_to_ignore: #edge cases to ignore
+            x = 1
+        elif len(full_dates_list) > 0: #found a date in parenthesis
             bday_text = full_dates_list[0]  
             print("Got full date in parentheses: " + page_url)
         elif summary_text.find('(') == -1:
@@ -165,7 +179,6 @@ def get_politician_data(page_url, congress_start_date=None, congress_num=None):
     #edge cases; wrong dates determined
     if page_url == "https://en.wikipedia.org/wiki/Thomas_Terry_Davis": #(before year - full year)
         bday_text = ""
-    # elif page_url == "https://en.wikipedia.org/wiki/John_Morrow_(Virginia_politician)" #wrong set of parenthesis
 
     bday = process_unformatted_date_text(bday_text.strip(), page_url)
     death_date = process_unformatted_date_text(death_date_text.strip(), page_url)
@@ -176,6 +189,30 @@ def get_politician_data(page_url, congress_start_date=None, congress_num=None):
         elif page_url == "https://en.wikipedia.org/wiki/David_Marchand": #no parentheses to indicate birthday
             bday = "January 31, 1772"
             death_date = "March 11, 1832"
+        elif page_url == "https://en.wikipedia.org/wiki/Andrew_Boden": #has an unspecified date date in personal section
+            death_date = "December 20, 1835"
+        elif page_url == "https://en.wikipedia.org/wiki/Daniel_H._Miller": #has an unspecified date date in personal section
+            death_date = "January 1, 1846"
+        elif page_url == "https://en.wikipedia.org/wiki/John_Cramer_(representative)": #no parentheses to indicate birthday
+            bday = "May 17, 1779"
+            death_date = "June 1, 1870"       
+        elif page_url == "https://en.wikipedia.org/wiki/William_Allen_(governor)": #weird "or" for day in bday  
+            bday = "December 18, 1803"
+            death_date = "July 11, 1879"  
+        elif page_url == "https://en.wikipedia.org/wiki/Jabez_Young_Jackson": #weird format (day month year)
+            bday = "August 5, 1790"  
+        elif page_url == "https://en.wikipedia.org/wiki/Ebenezer_J._Shields": #unlisted in summary  
+            bday = "December 22, 1778"
+            death_date = "April 21, 1846"  
+        elif page_url == "https://en.wikipedia.org/wiki/John_W._Noell": #unlisted in summary
+            bday = "February 22, 1816"
+            death_date = "March 14, 1863" 
+        elif page_url == "https://en.wikipedia.org/wiki/Henry_H._Starkweather": #unlisted in summary
+            bday = "April 19, 1826"
+            death_date = "January 28, 1876"      
+        elif page_url == "https://en.wikipedia.org/wiki/John_Brown_Gordon": #formatting in summary is messed up by hidden text 
+            bday = "February 6, 1832"
+            death_date = "January 9, 1904"                     
         else:
             print("Invalid/Unknown Date for: " + page_url) 
             print("\t" + bday_text)
@@ -194,7 +231,7 @@ def get_politician_data(page_url, congress_start_date=None, congress_num=None):
     if bday_date != None:
         if congress_start != None:
             if bday_date > congress_start:
-                print("Invalid BDay: After Congress Start")
+                print("Invalid BDay: After Congress Start: " + str([congress_start_date, bday]) + "; " + page_url)
             else:
                 age = (congress_start - bday_date).days//365
                 if age < 25:
