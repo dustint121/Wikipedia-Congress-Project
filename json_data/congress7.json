@@ -529,7 +529,7 @@
     },
     {
         "name": "John Campbell",
-        "URL": "https://en.wikipedia.org/wiki/John_Campbell_(1765%E2%80%931828)",
+        "URL": "https://en.wikipedia.org/wiki/John_Campbell_(1765\u20131828)",
         "party": "Federalist",
         "type": "Representative",
         "state": "Maryland",
@@ -642,9 +642,9 @@
         "type": "Representative",
         "state": "Massachusetts",
         "birth_date": "December 1, 1737",
-        "death_date": "November 20, 1737",
+        "death_date": "November 16, 1817",
         "age_at_congress": 63,
-        "age_at_death": -1,
+        "age_at_death": 80,
         "sex": "male"
     },
     {
@@ -1369,7 +1369,7 @@
     },
     {
         "name": "William Butler Sr.",
-        "URL": "https://en.wikipedia.org/wiki/William_Butler_(1759%E2%80%931821)",
+        "URL": "https://en.wikipedia.org/wiki/William_Butler_(1759\u20131821)",
         "party": "Democratic-Republican",
         "type": "Representative",
         "state": "South Carolina",

@@ -181,7 +181,7 @@
     },
     {
         "name": "Richard Stockton",
-        "URL": "https://en.wikipedia.org/wiki/Richard_Stockton_(1764%E2%80%931828)",
+        "URL": "https://en.wikipedia.org/wiki/Richard_Stockton_(1764\u20131828)",
         "party": "Federalist",
         "type": "Senator",
         "state": "New York",
@@ -618,9 +618,9 @@
         "type": "Representative",
         "state": "Massachusetts",
         "birth_date": "December 1, 1737",
-        "death_date": "November 20, 1737",
+        "death_date": "November 16, 1817",
         "age_at_congress": 59,
-        "age_at_death": -1,
+        "age_at_death": 80,
         "sex": "male"
     },
     {
@@ -793,7 +793,7 @@
     },
     {
         "name": "William Gordon",
-        "URL": "https://en.wikipedia.org/wiki/William_Gordon_(1763%E2%80%931802)",
+        "URL": "https://en.wikipedia.org/wiki/William_Gordon_(1763\u20131802)",
         "party": "Federalist",
         "type": "Representative",
         "state": "New Hampshire",
@@ -997,7 +997,7 @@
     },
     {
         "name": "Joseph McDowell",
-        "URL": "https://en.wikipedia.org/wiki/Joseph_%22Pleasant_Gardens%22_McDowell",
+        "URL": "https://en.wikipedia.org/wiki/Joseph_\"Pleasant_Gardens\"_McDowell",
         "party": "Democratic-Republican",
         "type": "Representative",
         "state": "North Carolina",

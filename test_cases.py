@@ -1,13 +1,10 @@
 import persons_wiki
 import wikipediaapi
 import urllib.parse
-#edge cases to work on
-
-# "https://en.wikipedia.org/wiki/William_Shepard" #TO WORK ON
 
 
 #edge cases: DONE
-
+# "https://en.wikipedia.org/wiki/William_Shepard" #3 dates
 #https://en.wikipedia.org/wiki/Jacob_Hibshman  ; additional text in front
 #"https://en.wikipedia.org/wiki/John_Paterson_(New_York_politician)": #a pair of preceding parenthesis
 
@@ -56,8 +53,11 @@ import urllib.parse
 #https://en.wikipedia.org/wiki/Jean_Spencer_Ashbrook #replaced her husband; unconsidered
 #https://en.wikipedia.org/wiki/Sala_Burton #replaced her husband;
 #https://en.wikipedia.org/wiki/Catherine_Small_Long #replaced her husband;
-# https://en.wikipedia.org/wiki/Jo_Ann_Emerson #replaced her husband;
+#https://en.wikipedia.org/wiki/Jo_Ann_Emerson #replaced her husband;
 #https://en.wikipedia.org/wiki/Lois_Capps #replaced her husband in 1998
+#https://en.wikipedia.org/wiki/Doris_Matsui #replaced her husband in 2005
+#https://en.wikipedia.org/wiki/Niki_Tsongas #replaced her husband in 2007
+#https://en.wikipedia.org/wiki/Julia_Letlow #replaced her husband in 2021
 #test cases below
 
 # "https://en.wikipedia.org/wiki/John_Stewart_(Pennsylvania_politician)" #unknown case
@@ -85,7 +85,7 @@ import urllib.parse
 
 
 
-page_url = "https://en.wikipedia.org/wiki/Leslie_Jasper_Steele"
+page_url = "https://en.wikipedia.org/wiki/William_Shepard"
 wiki_wiki = wikipediaapi.Wikipedia('Congress Wiki Project(dustintran36@gmail.com)', 'en')
 page_title = page_url.split("wiki/")[1]
 page_title = urllib.parse.unquote(page_title)
@@ -94,9 +94,7 @@ page_py = wiki_wiki.page(page_title)
 # print(len(summary_text))
 # print(summary_text)
 
-print(urllib.parse.unquote("Matthew G. Mart\u00ednez"))
-x = urllib.parse.unquote("Matthew G. Mart\u00ednez")
-print(x)
+
 # for s in page_py.sections:
 #     print(s.title)
 
@@ -105,7 +103,7 @@ print(x)
 # print(persons_wiki.get_sex_from_wiki_page(page_py, 66, page_url))
 # print(persons_wiki.get_all_wiki_text_by_section(page_py.sections[0:3]))
 
-# print(persons_wiki.get_politician_data(page_url,None,43))
+print(persons_wiki.get_politician_data(page_url,None,43))
 
     # if len(summary_text) == 0:
     #     response = requests.get(page_url)

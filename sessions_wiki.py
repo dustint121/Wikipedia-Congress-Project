@@ -279,7 +279,7 @@ for congress in congress_dict:
     congress_start_date = congress_dict[congress_num]["start_date"]
     # print(str(congress_num) + ": " + congress_start_date)
 
-    if 118 <= congress_num <= 118:
+    if 5 <= congress_num <= 7:
         data = get_congresspeople_for_a_congress(congress_URL, congress_num, congress_start_date)
         file_path = "json_data/congress" + str(congress_num) + ".json"
         # Ensure the directory exists

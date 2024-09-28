@@ -184,6 +184,9 @@ def get_politician_data(page_url, congress_start_date=None, congress_num=None):
     #edge cases; wrong dates determined
     if page_url == "https://en.wikipedia.org/wiki/Thomas_Terry_Davis": #(before year - full year)
         bday_text = ""
+    if page_url == "https://en.wikipedia.org/wiki/William_Shepard": #weird case; 3 dates
+            bday_text = "December 1, 1737"
+            death_date_text = "November 16, 1817"       
 
     bday = process_unformatted_date_text(bday_text.strip(), page_url)
     death_date = process_unformatted_date_text(death_date_text.strip(), page_url)
