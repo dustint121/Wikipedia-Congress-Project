@@ -5,8 +5,13 @@ import urllib.parse
 import random
 
 def get_politician_data(page_url, congress_start_date=None, congress_num=None):
-    wiki_wiki = wikipediaapi.Wikipedia('Congress Wiki Project(dustintran36@gmail.com)', 'en')
-    page_url = urllib.parse.unquote(page_url) #remove possible URL encryption that wikiapi can't handle
+    wiki_wiki = random.choice([
+        wikipediaapi.Wikipedia('Congress Wiki Project(dustin.tran@wevoteeducation.org)', 'en'),
+        wikipediaapi.Wikipedia('Congress Wiki Project(dustintran36@gmail.com)', 'en'),
+        wikipediaapi.Wikipedia('Congress Wiki Project(dustintran132@calpoly.edu)', 'en'),
+        wikipediaapi.Wikipedia('Congress Wiki Project(dustin.tran@artsphereinc.org)', 'en'),
+        ])
+    # wiki_wiki = wikipediaapi.Wikipedia('Congress Wiki Project(dustintran36@gmail.com)', 'en')
     page_title = page_url.split("wiki/")[1]
     page_py = wiki_wiki.page(page_title)
 
@@ -29,13 +34,19 @@ def get_politician_data(page_url, congress_start_date=None, congress_num=None):
     closing_parenthesis_index -= starting_parenthesis_index
     starting_parenthesis_index -= starting_parenthesis_index
 
+    #first politician sex
     sex = get_sex_from_wiki_page(wiki_page=page_py,congress_num=congress_num, page_url=page_url)
     if congress_num != None and sex == None:
         if page_url == "https://en.wikipedia.org/wiki/Franklin_Ellsworth": #no gender references at all
             sex = "male"
+        elif page_url == "https://en.wikipedia.org/wiki/Harold_B._McSween": #no gender references at all
+            sex = "male"
+        elif page_url == "https://en.wikipedia.org/wiki/Norman_D._Shumway": #no gender references in first 2 sections
+            sex = "male"
         else:
             print("Can't find sex: " + page_url)
-
+    if page_url == "https://en.wikipedia.org/wiki/Barbara_Mikulski": #has a quoted speech with lots of male pronouns
+        sex = "female"
 
     bday_text = ""
     death_date_text = ""
@@ -164,7 +175,8 @@ def get_politician_data(page_url, congress_start_date=None, congress_num=None):
                     "https://en.wikipedia.org/wiki/Ebenezer_J._Shields",
                     "https://en.wikipedia.org/wiki/John_W._Noell",
                     "https://en.wikipedia.org/wiki/Henry_H._Starkweather",
-                    "https://en.wikipedia.org/wiki/John_Brown_Gordon"
+                    "https://en.wikipedia.org/wiki/John_Brown_Gordon",
+                    "https://en.wikipedia.org/wiki/Charles_Daniels_(New_York_politician)"
                     ]
         if page_url in cases_to_ignore: #edge cases to ignore
             x = 1
@@ -212,7 +224,10 @@ def get_politician_data(page_url, congress_start_date=None, congress_num=None):
             death_date = "January 28, 1876"      
         elif page_url == "https://en.wikipedia.org/wiki/John_Brown_Gordon": #formatting in summary is messed up by hidden text 
             bday = "February 6, 1832"
-            death_date = "January 9, 1904"                     
+            death_date = "January 9, 1904"     
+        elif page_url == "https://en.wikipedia.org/wiki/Charles_Daniels_(New_York_politician)": #incomplete parenthesis    
+            bday = "March 24, 1825"
+            death_date = "December 20, 1897"               
         else:
             print("Invalid/Unknown Date for: " + page_url) 
             print("\t" + bday_text)
@@ -329,7 +344,9 @@ def get_sex_from_wiki_page(wiki_page, congress_num, page_url):
     female_count = 0
     total_count = 0
     if congress_num != None:
-        if congress_num >= 65: #first female congress was in 65th congress
+        if congress_num < 65:
+            sex = "male"
+        elif congress_num >= 65: #first female congress was in 65th congress
             # sex_dict = {"she": "female", "he": "male", "his" : "male", "her" : "female"}
             #only get first two section(including their subsections) after the summary
             wiki_page_sections = []
@@ -348,16 +365,12 @@ def get_sex_from_wiki_page(wiki_page, congress_num, page_url):
                         total_count += 1
                     elif word in ["she", "her"]:
                         female_count += 1
-                        total_count += 1
-                    
-            male_probability = male_count/total_count
-            # print(male_probability)
-            if 0.3 < male_probability < 0.7:
-                print("Sex determination is too close(" + str(male_probability) + "): " + page_url)
+                        total_count += 1     
             if total_count > 0:
+                male_probability = male_count/total_count
                 sex = "male" if male_probability > 0.5 else "female" 
-        else: #for congress 1-64
-            sex = "male"
+                if 0.3 < male_probability < 0.7:
+                    print("Sex determination is close(" + str(male_probability) + ":" + sex + ") " + page_url)
     return sex
 
 def get_all_wiki_text_by_section(sections):

@@ -18,12 +18,45 @@ import urllib.parse
 
 #"https://en.wikipedia.org/wiki/John_Steele_(North_Carolina_politician)", #24 when serving congress
 
-#text length considerations below
+#"https://en.wikipedia.org/wiki/Dennis_Ch%C3%A1vez" #encrypted URL; should be handled before going into politician data funtion
+# 
+# ext length considerations below
 # "https://en.wikipedia.org/wiki/Philip_Key_(U.S._politician)"  #summary text is only 96 characters
 # "https://en.wikipedia.org/wiki/John_Sevier" #there is another text before sumamry text that is 73 characters
 
 # page_url = "https://en.wikipedia.org/wiki/John_Morrow_(Virginia_politician)" #need first set of parenthesis, not second
 
+
+
+
+#close gender determination at first 50 words
+# page_url = "https://en.wikipedia.org/wiki/Robert_L._Owen" #has a paragraph dedication to mom
+# page_url = "https://en.wikipedia.org/wiki/Leslie_Jasper_Steele" #not that many words; male
+
+
+#interesting cases; not relevant to project
+#https://en.wikipedia.org/wiki/Winnifred_Mason_Huck #third women in congress for 67th congress; unconsidered due to being a replacement
+#https://en.wikipedia.org/wiki/Mae_Nolan #replaced her husband;
+#https://en.wikipedia.org/wiki/Edith_Nourse_Rogers #replaced her husband;
+#https://en.wikipedia.org/wiki/Effiegene_Wingo  #replaced her husband for 1st time in Congress
+#https://en.wikipedia.org/wiki/Willa_Blake_Eslick #replaced her husband; unconsidered
+#https://en.wikipedia.org/wiki/Marian_W._Clarke #replaced her husband; unconsidered
+#https://en.wikipedia.org/wiki/Elizabeth_Hawley_Gasque  #replaced her husband; unconsidered
+#https://en.wikipedia.org/wiki/Clara_G._McMillan #replaced her husband; unconsidered
+#https://en.wikipedia.org/wiki/Frances_P._Bolton #replaced her husband;
+#https://en.wikipedia.org/wiki/Katharine_Byron #replaced her husband; unconsidered
+#https://en.wikipedia.org/wiki/Elizabeth_Kee #replaced her husband; unconsidered
+#https://en.wikipedia.org/wiki/Vera_Buchanan #replaced her husband
+#https://en.wikipedia.org/wiki/Elizabeth_P._Farrington #replaced her husband
+#https://en.wikipedia.org/wiki/Irene_Baker    #replaced her husband; unconsidered
+#https://en.wikipedia.org/wiki/Lera_Millard_Thomas #replaced her husband; unconsidered
+#https://en.wikipedia.org/wiki/Elizabeth_B._Andrews #replaced her husband; unconsidered
+#https://en.wikipedia.org/wiki/Cardiss_Collins #replaced her husband;
+#https://en.wikipedia.org/wiki/Shirley_Neil_Pettis #replaced her husband;
+#https://en.wikipedia.org/wiki/Jean_Spencer_Ashbrook #replaced her husband; unconsidered
+#https://en.wikipedia.org/wiki/Sala_Burton #replaced her husband;
+#https://en.wikipedia.org/wiki/Catherine_Small_Long #replaced her husband;
+#https://en.wikipedia.org/wiki/Lois_Capps #replaced her husband in 1998
 #test cases below
 
 # "https://en.wikipedia.org/wiki/John_Stewart_(Pennsylvania_politician)" #unknown case
@@ -51,7 +84,7 @@ import urllib.parse
 
 
 
-page_url = "https://en.wikipedia.org/wiki/John_Brown_Gordon"
+page_url = "https://en.wikipedia.org/wiki/Leslie_Jasper_Steele"
 wiki_wiki = wikipediaapi.Wikipedia('Congress Wiki Project(dustintran36@gmail.com)', 'en')
 page_title = page_url.split("wiki/")[1]
 page_title = urllib.parse.unquote(page_title)
@@ -59,6 +92,7 @@ page_py = wiki_wiki.page(page_title)
 # summary_text = page_py.summary
 # print(len(summary_text))
 # print(summary_text)
+
 
 # for s in page_py.sections:
 #     print(s.title)
@@ -68,7 +102,7 @@ page_py = wiki_wiki.page(page_title)
 # print(persons_wiki.get_sex_from_wiki_page(page_py, 66, page_url))
 # print(persons_wiki.get_all_wiki_text_by_section(page_py.sections[0:3]))
 
-print(persons_wiki.get_politician_data(page_url,None,43))
+# print(persons_wiki.get_politician_data(page_url,None,43))
 
     # if len(summary_text) == 0:
     #     response = requests.get(page_url)
@@ -76,3 +110,6 @@ print(persons_wiki.get_politician_data(page_url,None,43))
     #     summary_text = next(p.get_text() for p in soup.find_all("p") if len(p.get_text()) > 75)
     #     summary_text = summary_text[:200] #get substring for faster processing and other issues
     #     print("Using html request for: " + page_url)
+
+
+    
