@@ -5,13 +5,7 @@ import urllib.parse
 import random
 
 def get_politician_data(page_url, congress_start_date=None, congress_num=None):
-    wiki_wiki = random.choice([
-        wikipediaapi.Wikipedia('Congress Wiki Project(dustin.tran@wevoteeducation.org)', 'en'),
-        wikipediaapi.Wikipedia('Congress Wiki Project(dustintran36@gmail.com)', 'en'),
-        wikipediaapi.Wikipedia('Congress Wiki Project(dustintran132@calpoly.edu)', 'en'),
-        wikipediaapi.Wikipedia('Congress Wiki Project(dustin.tran@artsphereinc.org)', 'en'),
-        ])
-    # wiki_wiki = wikipediaapi.Wikipedia('Congress Wiki Project(dustintran36@gmail.com)', 'en')
+    wiki_wiki = wikipediaapi.Wikipedia('Congress Wiki Project(dustintran36@gmail.com)', 'en')
     page_title = page_url.split("wiki/")[1]
     page_py = wiki_wiki.page(page_title)
 
@@ -45,8 +39,6 @@ def get_politician_data(page_url, congress_start_date=None, congress_num=None):
             sex = "male"
         else:
             print("Can't find sex: " + page_url)
-    if page_url == "https://en.wikipedia.org/wiki/Barbara_Mikulski": #has a quoted speech with lots of male pronouns
-        sex = "female"
 
     bday_text = ""
     death_date_text = ""
@@ -176,7 +168,8 @@ def get_politician_data(page_url, congress_start_date=None, congress_num=None):
                     "https://en.wikipedia.org/wiki/John_W._Noell",
                     "https://en.wikipedia.org/wiki/Henry_H._Starkweather",
                     "https://en.wikipedia.org/wiki/John_Brown_Gordon",
-                    "https://en.wikipedia.org/wiki/Charles_Daniels_(New_York_politician)"
+                    "https://en.wikipedia.org/wiki/Charles_Daniels_(New_York_politician)",
+                    "https://en.wikipedia.org/wiki/Chip_Cravaack"
                     ]
         if page_url in cases_to_ignore: #edge cases to ignore
             x = 1
@@ -227,7 +220,9 @@ def get_politician_data(page_url, congress_start_date=None, congress_num=None):
             death_date = "January 9, 1904"     
         elif page_url == "https://en.wikipedia.org/wiki/Charles_Daniels_(New_York_politician)": #incomplete parenthesis    
             bday = "March 24, 1825"
-            death_date = "December 20, 1897"               
+            death_date = "December 20, 1897"             
+        elif page_url == "https://en.wikipedia.org/wiki/Chip_Cravaack":  # (born year)
+            bday = "January 29, 1951"
         else:
             print("Invalid/Unknown Date for: " + page_url) 
             print("\t" + bday_text)
@@ -369,7 +364,9 @@ def get_sex_from_wiki_page(wiki_page, congress_num, page_url):
             if total_count > 0:
                 male_probability = male_count/total_count
                 sex = "male" if male_probability > 0.5 else "female" 
-                if 0.3 < male_probability < 0.7:
+                if page_url == "https://en.wikipedia.org/wiki/Barbara_Mikulski": #has a quoted speech with lots of male pronouns
+                    sex = "female"
+                elif 0.3 < male_probability < 0.7:
                     print("Sex determination is close(" + str(male_probability) + ":" + sex + ") " + page_url)
     return sex
 

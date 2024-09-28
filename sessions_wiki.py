@@ -144,7 +144,8 @@ def get_congresspeople_for_a_congress(page_url, congress_num, congress_start_dat
     
         for index in range(len(states)): #for each state
             state = states[index]
-            if state in ["Non-voting members", "Non-voting delegates", "Foreign Relations", "Non-voting member", "Delegates"]:
+            if state in ["Non-voting members", "Non-voting delegates", "Foreign Relations", 
+                         "Non-voting member", "Delegates", "Non-voting delegations"]:
                 continue
             # Check if the parent of the <a> tag is a direct child of the <dl> tag; 
                 # to prevent recording of substitute congressman
@@ -183,6 +184,8 @@ def get_congresspeople_for_a_congress(page_url, congress_num, congress_start_dat
                     if URL == "https://en.wikipedia.org/wiki/Independent_(politician)": #found in 93rd congress
                         continue
                     if URL == "https://en.wikipedia.org/wiki/Conservative_Party_of_New_York_State": #found in 94th congress
+                        continue
+                    if URL == "https://en.wikipedia.org/wiki/New_Progressive_Party_of_Puerto_Rico": #105th congress
                         continue
 
                     if congress_num == 35 and name == "John C. Kunkel": #wrong URL; got grandson's URL
@@ -224,12 +227,26 @@ def get_congresspeople_for_a_congress(page_url, congress_num, congress_start_dat
                             party = "Conservative"
                         elif congress_num >= 92 and party == "I":
                             party = "Independent"
-                        elif congress_num == 98 and party == "D, then R": #for Andy Ireland
+                        elif party == "D, then R": 
                             party = "Democratic"
                         elif congress_num== 99 and party == "C; changed to R on October 7, 1985": #for William Carney
                             party = "Conservative"
-                        elif congress_num == 101 and party == "D, then R": #for Andy Ireland
+                        elif congress_num == 101 and party == "D then R": 
                             party = "Democratic"
+                        elif party == "D, then R from November 9, 1994":
+                            party = "Democratic"
+                        elif party == "D, switched to R July 27, 2000":
+                            party = "Democratic"
+                        elif party == "D, switched to I January 27, 2000":
+                            party = "Democratic"
+                        elif party == "R until June 6, 2001, then I":
+                            party = "Republican"
+                        elif congress_num == 110 and party == "ID":
+                            party = "Independent"
+                        elif party == "R, then I, then L": #116th congress
+                            party = "Republican"
+                        elif party == "R, then I": #116th congress
+                            party = "Republican"
                         elif name == "Joe Manchin" and congress_num == 118: #Democratic until May 31, 2024
                             party = "Democratic"
                         else:
@@ -262,7 +279,7 @@ for congress in congress_dict:
     congress_start_date = congress_dict[congress_num]["start_date"]
     # print(str(congress_num) + ": " + congress_start_date)
 
-    if 101 <= congress_num <= 105:
+    if 118 <= congress_num <= 118:
         data = get_congresspeople_for_a_congress(congress_URL, congress_num, congress_start_date)
         file_path = "json_data/congress" + str(congress_num) + ".json"
         # Ensure the directory exists
@@ -271,3 +288,7 @@ for congress in congress_dict:
             json.dump(data, file, indent=4)
     # count += len(result)
     # print(count)
+
+
+
+#NOTE: json dumps automatically encrypts special characters into json files; must decrypt when receiving

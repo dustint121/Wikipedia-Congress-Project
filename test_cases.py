@@ -56,6 +56,7 @@ import urllib.parse
 #https://en.wikipedia.org/wiki/Jean_Spencer_Ashbrook #replaced her husband; unconsidered
 #https://en.wikipedia.org/wiki/Sala_Burton #replaced her husband;
 #https://en.wikipedia.org/wiki/Catherine_Small_Long #replaced her husband;
+# https://en.wikipedia.org/wiki/Jo_Ann_Emerson #replaced her husband;
 #https://en.wikipedia.org/wiki/Lois_Capps #replaced her husband in 1998
 #test cases below
 
@@ -93,7 +94,9 @@ page_py = wiki_wiki.page(page_title)
 # print(len(summary_text))
 # print(summary_text)
 
-
+print(urllib.parse.unquote("Matthew G. Mart\u00ednez"))
+x = urllib.parse.unquote("Matthew G. Mart\u00ednez")
+print(x)
 # for s in page_py.sections:
 #     print(s.title)
 
