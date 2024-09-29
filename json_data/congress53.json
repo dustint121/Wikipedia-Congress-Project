@@ -2641,7 +2641,7 @@
     },
     {
         "name": "Joseph H. O'Neil",
-        "URL": "https://en.wikipedia.org/wiki/Joseph_H._O%27Neil",
+        "URL": "https://en.wikipedia.org/wiki/Joseph_H._O'Neil",
         "party": "Democratic",
         "type": "Representative",
         "state": "Massachusetts",
@@ -4225,7 +4225,7 @@
     },
     {
         "name": "Charles O'Neill",
-        "URL": "https://en.wikipedia.org/wiki/Charles_O%27Neill_(Pennsylvania_politician)",
+        "URL": "https://en.wikipedia.org/wiki/Charles_O'Neill_(Pennsylvania_politician)",
         "party": "Republican",
         "type": "Representative",
         "state": "Pennsylvania",
@@ -5077,7 +5077,7 @@
     },
     {
         "name": "Charles T. O'Ferrall",
-        "URL": "https://en.wikipedia.org/wiki/Charles_Triplett_O%27Ferrall",
+        "URL": "https://en.wikipedia.org/wiki/Charles_Triplett_O'Ferrall",
         "party": "Democratic",
         "type": "Representative",
         "state": "Virginia",
@@ -5325,54 +5325,6 @@
         "death_date": "December 9, 1912",
         "age_at_congress": 52,
         "age_at_death": 71,
-        "sex": "male"
-    },
-    {
-        "name": "Marcus A. Smith",
-        "URL": "https://en.wikipedia.org/wiki/Marcus_A._Smith",
-        "party": "Democratic",
-        "type": "Representative",
-        "state": "Delegates",
-        "birth_date": "January 24, 1851",
-        "death_date": "April 7, 1924",
-        "age_at_congress": 42,
-        "age_at_death": 73,
-        "sex": "male"
-    },
-    {
-        "name": "Antonio Joseph",
-        "URL": "https://en.wikipedia.org/wiki/Antonio_Joseph_(U.S._politician)",
-        "party": "Democratic",
-        "type": "Representative",
-        "state": "Delegates",
-        "birth_date": "August 25, 1846",
-        "death_date": "April 19, 1910",
-        "age_at_congress": 46,
-        "age_at_death": 63,
-        "sex": "male"
-    },
-    {
-        "name": "Dennis T. Flynn",
-        "URL": "https://en.wikipedia.org/wiki/Dennis_Thomas_Flynn",
-        "party": "Republican",
-        "type": "Representative",
-        "state": "Delegates",
-        "birth_date": "February 13, 1861",
-        "death_date": "June 19, 1939",
-        "age_at_congress": 32,
-        "age_at_death": 78,
-        "sex": "male"
-    },
-    {
-        "name": "Joseph L. Rawlins",
-        "URL": "https://en.wikipedia.org/wiki/Joseph_Lafayette_Rawlins",
-        "party": "Democratic",
-        "type": "Representative",
-        "state": "Delegates",
-        "birth_date": "March 28, 1850",
-        "death_date": "May 24, 1926",
-        "age_at_congress": 42,
-        "age_at_death": 76,
         "sex": "male"
     }
 ]

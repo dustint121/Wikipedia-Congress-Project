@@ -890,7 +890,7 @@
     {
         "name": "Zadok Casey",
         "URL": "https://en.wikipedia.org/wiki/Zadok_Casey",
-        "party": "Ind. D",
+        "party": "Independent Democrat",
         "type": "Representative",
         "state": "Illinois",
         "birth_date": "March 7, 1796",
@@ -2965,7 +2965,7 @@
     },
     {
         "name": "John Campbell",
-        "URL": "https://en.wikipedia.org/wiki/John_Campbell_(1795%E2%80%931845)",
+        "URL": "https://en.wikipedia.org/wiki/John_Campbell_(1795\u20131845)",
         "party": "Democratic",
         "type": "Representative",
         "state": "South Carolina",

@@ -149,9 +149,6 @@ def get_congresspeople_for_a_congress(page_url, congress_num, congress_start_dat
                 continue
             # Check if the parent of the <a> tag is a direct child of the <dl> tag; 
                 # to prevent recording of substitute congressman
-            # print(len(states))
-            # print(index)
-            # print(state)
             for a in congressmen_by_state_HTML[index].find_all('a', resurive=False):
                 # print(a.text)
                 if a.text in ["Skip to House of Representatives", "data missing"] or a.text[0] == '[':
@@ -190,15 +187,19 @@ def get_congresspeople_for_a_congress(page_url, congress_num, congress_start_dat
 
                     if congress_num == 35 and name == "John C. Kunkel": #wrong URL; got grandson's URL
                         URL = "https://en.wikipedia.org/wiki/John_Christian_Kunkel"
-
                     possible_party_full_name = congress_parties_dict[congress_num].get(party)
                     if possible_party_full_name == None:
-                        if party == "DFL": #the Minnesota subset of the Democratic Party
+                        if congress_num == 18:
+                            if "DR" in party:
+                                party = "Democratic-Republican"
+                            if "F" in party:
+                                party = "Federalist"
+                        elif party == "DFL": #the Minnesota subset of the Democratic Party
                             party = "Democratic"
                         elif party == "Anti-M":
                             party = "Anti-Masonic"
-                        elif name == "States Rights D": #for Franklin H. Elmore of 25th congress
-                            party == "Democratic"
+                        elif party == "States Rights D": #for Franklin H. Elmore of 25th congress
+                            party = "Democratic"
                         elif party == "Ind. D":      #for Zadok Casey of 27th Congress
                             party = "Independent Democrat"
                         elif party in ["Ind. W", "IW"]:      
@@ -269,26 +270,25 @@ def get_congresspeople_for_a_congress(page_url, congress_num, congress_start_dat
     return all_congresspersons_data_list
 
 
+if __name__ == "__main__":
+    congress_dict = get_full_congress_dict()
+    count = 0
+    for congress in congress_dict:
+        congress_num = congress
+        congress_URL = congress_dict[congress_num]["URL"]
+        congress_start_date = congress_dict[congress_num]["start_date"]
+        # print(str(congress_num) + ": " + congress_start_date)
+
+        if 53 <= congress_num <= 53:
+            data = get_congresspeople_for_a_congress(congress_URL, congress_num, congress_start_date)
+            file_path = "json_data/congress" + str(congress_num) + ".json"
+            # Ensure the directory exists
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            with open(file_path, 'w') as file:
+                json.dump(data, file, indent=4)
+        # count += len(result)
+        # print(count)
 
 
-congress_dict = get_full_congress_dict()
-count = 0
-for congress in congress_dict:
-    congress_num = congress
-    congress_URL = congress_dict[congress_num]["URL"]
-    congress_start_date = congress_dict[congress_num]["start_date"]
-    # print(str(congress_num) + ": " + congress_start_date)
 
-    if 5 <= congress_num <= 7:
-        data = get_congresspeople_for_a_congress(congress_URL, congress_num, congress_start_date)
-        file_path = "json_data/congress" + str(congress_num) + ".json"
-        # Ensure the directory exists
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
-        with open(file_path, 'w') as file:
-            json.dump(data, file, indent=4)
-    # count += len(result)
-    # print(count)
-
-
-
-#NOTE: json dumps automatically encrypts special characters into json files; must decrypt when receiving
+    #NOTE: json dumps automatically encrypts special characters into json files; must decrypt when receiving

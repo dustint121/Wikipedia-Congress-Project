@@ -3,9 +3,17 @@ from datetime import datetime
 import wikipediaapi
 import urllib.parse
 import random
+#THIS WIKI SECTION AND MAIN FUNCTION, GET_POLITICIAN_DATA, IS CALLED ON BY THE SESSIONS_WIKI FILE.
+
 
 def get_politician_data(page_url, congress_start_date=None, congress_num=None):
-    wiki_wiki = wikipediaapi.Wikipedia('Congress Wiki Project(dustintran36@gmail.com)', 'en')
+    wiki_wiki = random.choice([
+        wikipediaapi.Wikipedia('Congress Wiki Project(dustin.tran@wevoteeducation.org)', 'en'),
+        wikipediaapi.Wikipedia('Congress Wiki Project(dustintran36@gmail.com)', 'en'),
+        wikipediaapi.Wikipedia('Congress Wiki Project(dustintran132@calpoly.edu)', 'en'),
+        wikipediaapi.Wikipedia('Congress Wiki Project(dustin.tran@artsphereinc.org)', 'en'),
+        ])
+    # wiki_wiki = wikipediaapi.Wikipedia('Congress Wiki Project(dustintran36@gmail.com)', 'en')
     page_title = page_url.split("wiki/")[1]
     page_py = wiki_wiki.page(page_title)
 
