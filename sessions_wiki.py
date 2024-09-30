@@ -5,6 +5,11 @@ import os
 import json
 import persons_wiki
 import urllib
+from dotenv import load_dotenv
+
+load_dotenv()
+# LAMBDA_API_POINT 
+lambda_api_point = os.getenv("LAMBDA_API_POINT") #place a variable, LAMBDA_API_POINT, into .env file with API point to lambda
 
 #has 3 tables for congressional session: past, current, future
 def get_full_congress_dict():
@@ -109,7 +114,7 @@ def get_all_parties_dict():
 
 
 
-def get_congresspeople_for_a_congress(page_url, congress_num, congress_start_date=None):
+def get_congresspeople_for_a_congress(page_url, congress_num, congress_start_date=None, use_lambda=False):
     response = requests.get(page_url)
     soup = BeautifulSoup(response.content, 'html.parser')
     print("\n" + page_url)
@@ -117,19 +122,11 @@ def get_congresspeople_for_a_congress(page_url, congress_num, congress_start_dat
 
     #24th congress wiki page does not use tables; fix using a modified html file with two tables elements to read
     if page_url == "https://en.wikipedia.org/wiki/24th_United_States_Congress":
-        with open("html/24th_congress_data.html", 'r', encoding='utf-8') as file:
+        with open("html_files/24th_congress_data.html", 'r', encoding='utf-8') as file:
             html_content = file.read()
             soup = BeautifulSoup(html_content, 'html.parser')
 
     tables = soup.find_all("table",{'class':"col-begin", 'role':"presentation"})[:2]
-
-
-    # senate_table, representative_table = tables[:2]
-    # #check for connecticut or alabama id ; alabama starts as of 16th congress 
-    # check_senate = senate_table.find('div', class_="mw-heading mw-heading4").find("h4").get("id") in ["Alabama", "Connecticut"]
-    # check_representative = representative_table.find('div', class_="mw-heading mw-heading4").find("h4").get("id") in ["Alabama_2", "Connecticut_2"]
-    # if (check_senate and check_representative) is not True:
-    #     print("Issue")
 
     congress_parties_dict = get_all_parties_dict_fast()
 
@@ -258,13 +255,31 @@ def get_congresspeople_for_a_congress(page_url, congress_num, congress_start_dat
 
                     individual_congressperson_data_dict = {'name':name, 'URL': URL,'party': party, 
                             'type': type, 'state': state}
-                    new_data = (persons_wiki.get_politician_data(URL, congress_start_date, congress_num))
+            
+
+                    new_data = None
+                    if use_lambda == True:
+                        payload = {
+                            "URL": URL,
+                            "congress_start_date": congress_start_date,
+                            "congress_num": congress_num
+                            }
+                        
+                        headers = {'Content-Type': 'application/json'}
+                        result = requests.post(lambda_api_point, data=json.dumps(payload))
+                        new_data = result.json()
+                        
+                        if result.status_code != 200:
+                            print("Status code not 200: " + str(result.status_code))
+                            return
+                    else:
+                        new_data = (persons_wiki.get_politician_data(URL, congress_start_date, congress_num))
+
+                    if new_data == None:
+                        print("bug detected; lambda issue")
+
                     individual_congressperson_data_dict.update(new_data)
-
                     all_congresspersons_data_list.append(individual_congressperson_data_dict)
-
-                    # print(URL)
-
 
         type = "Representative"
     return all_congresspersons_data_list
@@ -273,22 +288,30 @@ def get_congresspeople_for_a_congress(page_url, congress_num, congress_start_dat
 if __name__ == "__main__":
     congress_dict = get_full_congress_dict()
     count = 0
+
     for congress in congress_dict:
         congress_num = congress
         congress_URL = congress_dict[congress_num]["URL"]
         congress_start_date = congress_dict[congress_num]["start_date"]
         # print(str(congress_num) + ": " + congress_start_date)
 
-        if 53 <= congress_num <= 53:
-            data = get_congresspeople_for_a_congress(congress_URL, congress_num, congress_start_date)
-            file_path = "json_data/congress" + str(congress_num) + ".json"
+        if 58 <= congress_num <= 118:
+            use_lambda = True #NOTE; DETERMINES WHETHER TO USE AWS LAMBDA IMPLEMENTATION
+            data = get_congresspeople_for_a_congress(congress_URL, congress_num, congress_start_date, use_lambda)
+            if data == None:
+                break
+            file_path = ""
+            if use_lambda == True:
+                file_path = "json_data_using_lambda/congress" + str(congress_num) + ".json"
+            else:
+                file_path = "json_data/congress" + str(congress_num) + ".json"
             # Ensure the directory exists
             os.makedirs(os.path.dirname(file_path), exist_ok=True)
             with open(file_path, 'w') as file:
                 json.dump(data, file, indent=4)
-        # count += len(result)
-        # print(count)
+
+    #NOTE: json dumps automatically encrypts special characters into json files; may need to decrypt when receiving
 
 
 
-    #NOTE: json dumps automatically encrypts special characters into json files; must decrypt when receiving
+#1-52nd congress : 1 hour, 30 minutes with lambda

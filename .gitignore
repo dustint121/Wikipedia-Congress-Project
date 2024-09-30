@@ -10,3 +10,6 @@ __pycache__/
 
 
 .venv/
+
+
+json_data_using_lambda/
