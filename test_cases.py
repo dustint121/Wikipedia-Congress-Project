@@ -1,6 +1,10 @@
 import persons_wiki
 import wikipediaapi
 import urllib.parse
+import boto3
+from dotenv import load_dotenv
+import os
+import json
 #This file is just for testing use-cases.
 
 #edge cases: DONE
@@ -103,7 +107,7 @@ page_py = wiki_wiki.page(page_title)
 # print(persons_wiki.get_sex_from_wiki_page(page_py, 66, page_url))
 # print(persons_wiki.get_all_wiki_text_by_section(page_py.sections[0:3]))
 
-print(persons_wiki.get_politician_data(page_url,None,43))
+# print(persons_wiki.get_politician_data(page_url,None,43))
 
     # if len(summary_text) == 0:
     #     response = requests.get(page_url)
@@ -113,4 +117,44 @@ print(persons_wiki.get_politician_data(page_url,None,43))
     #     print("Using html request for: " + page_url)
 
 
-    
+load_dotenv()
+# LAMBDA_API_POINT 
+lambda_api_point = os.getenv("LAMBDA_API_POINT") #place a variable, LAMBDA_API_POINT, into .env file with API point to lambda
+
+aws_access_key_id = os.environ.get('AWS_ACCESS_KEY_ID')
+aws_secret_access_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
+
+
+# client = boto3.client('lambda', region_name = 'us-west-1',
+#                       aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
+# payload = {
+#         "congress_URL": "https://en.wikipedia.org/wiki/1st_United_States_Congress",
+#         "congress_num": 1,
+#         "congress_start_date": "March 4, 1789",
+#         "use_lambda": False
+#         }    
+# response = client.invoke(
+#     FunctionName="congress_wiki_lambda_parallize",
+#     InvocationType='Event',  # Use 'Event' for asynchronous invocation
+#     Payload=json.dumps(payload)
+# )   
+
+# response = client.invoke(
+#     FunctionName="congress_wiki_lambda_parallize",
+#     InvocationType='RequestResponse',  # Use 'Event' for asynchronous invocation
+#     Payload=json.dumps(payload)
+# )   
+
+# response_payload = json.loads(response['Payload'].read())
+# print(response_payload)
+
+
+
+
+
+# payload = {
+#         "congress_URL": "https://en.wikipedia.org/wiki/118st_United_States_Congress",
+#         "congress_num": 118,
+#         "congress_start_date": "January 3, 2023",
+#         "use_lambda": False
+#         }  

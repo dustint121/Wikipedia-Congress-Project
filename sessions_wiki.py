@@ -6,10 +6,14 @@ import json
 import persons_wiki
 import urllib
 from dotenv import load_dotenv
+import boto3
 
 load_dotenv()
 # LAMBDA_API_POINT 
 lambda_api_point = os.getenv("LAMBDA_API_POINT") #place a variable, LAMBDA_API_POINT, into .env file with API point to lambda
+
+aws_access_key_id = os.environ.get('AWS_ACCESS_KEY_ID')
+aws_secret_access_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
 
 #has 3 tables for congressional session: past, current, future
 def get_full_congress_dict():
@@ -227,6 +231,8 @@ def get_congresspeople_for_a_congress(page_url, congress_num, congress_start_dat
                             party = "Independent"
                         elif party == "D, then R": 
                             party = "Democratic"
+                        elif state == "Minnesota" and party == "I-R": #Independent-Republicans of Minnesota 
+                            party = "Republican"
                         elif congress_num== 99 and party == "C; changed to R on October 7, 1985": #for William Carney
                             party = "Conservative"
                         elif congress_num == 101 and party == "D then R": 
@@ -239,7 +245,7 @@ def get_congresspeople_for_a_congress(page_url, congress_num, congress_start_dat
                             party = "Democratic"
                         elif party == "R until June 6, 2001, then I":
                             party = "Republican"
-                        elif congress_num == 110 and party == "ID":
+                        elif name == "Joe Lieberman" and party == "ID": #changed to Independent after 109th congress
                             party = "Independent"
                         elif party == "R, then I, then L": #116th congress
                             party = "Republican"
@@ -258,7 +264,7 @@ def get_congresspeople_for_a_congress(page_url, congress_num, congress_start_dat
             
 
                     new_data = None
-                    if use_lambda == True:
+                    if use_lambda == True: #basic lambda call
                         payload = {
                             "URL": URL,
                             "congress_start_date": congress_start_date,
@@ -268,11 +274,10 @@ def get_congresspeople_for_a_congress(page_url, congress_num, congress_start_dat
                         headers = {'Content-Type': 'application/json'}
                         result = requests.post(lambda_api_point, data=json.dumps(payload))
                         new_data = result.json()
-                        
                         if result.status_code != 200:
                             print("Status code not 200: " + str(result.status_code))
                             return
-                    else:
+                    else: 
                         new_data = (persons_wiki.get_politician_data(URL, congress_start_date, congress_num))
 
                     if new_data == None:
@@ -295,23 +300,47 @@ if __name__ == "__main__":
         congress_start_date = congress_dict[congress_num]["start_date"]
         # print(str(congress_num) + ": " + congress_start_date)
 
-        if 58 <= congress_num <= 118:
-            use_lambda = True #NOTE; DETERMINES WHETHER TO USE AWS LAMBDA IMPLEMENTATION
-            data = get_congresspeople_for_a_congress(congress_URL, congress_num, congress_start_date, use_lambda)
-            if data == None:
-                break
+        if 1 <= congress_num <= 118:
+            use_lambda = False #NOTE; DETERMINES WHETHER TO USE AWS LAMBDA IMPLEMENTATION for persons_wiki
+            lambda_parallelize = False #Determines Wheter to use lambda  implementation for sessions_wiki
+
             file_path = ""
-            if use_lambda == True:
-                file_path = "json_data_using_lambda/congress" + str(congress_num) + ".json"
+            if lambda_parallelize == True:
+                client = boto3.client('lambda', region_name = 'us-west-1',
+                            aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
+                payload = {
+                        "congress_URL": congress_URL,
+                        "congress_num": congress_num,
+                        "congress_start_date": congress_start_date,
+                        "use_lambda": False
+                        }    
+                response = client.invoke(
+                    FunctionName="congress_wiki_lambda_parallize",
+                    InvocationType='Event',  # Use 'Event' for asynchronous invocation
+                    Payload=json.dumps(payload)
+                )     
             else:
-                file_path = "json_data/congress" + str(congress_num) + ".json"
-            # Ensure the directory exists
-            os.makedirs(os.path.dirname(file_path), exist_ok=True)
-            with open(file_path, 'w') as file:
-                json.dump(data, file, indent=4)
+                data = get_congresspeople_for_a_congress(congress_URL, congress_num, congress_start_date, use_lambda)
+                if data == None:
+                    break
+
+                if use_lambda == True:
+                    file_path = "json_data_using_lambda/congress" + str(congress_num) + ".json"
+                elif use_lambda == False:
+                    file_path = "json_data/congress" + str(congress_num) + ".json"
+                # Ensure the directory exists
+                os.makedirs(os.path.dirname(file_path), exist_ok=True)
+                with open(file_path, 'w') as file:
+                    json.dump(data, file, indent=4)
 
     #NOTE: json dumps automatically encrypts special characters into json files; may need to decrypt when receiving
 
 
 
 #1-52nd congress : 1 hour, 30 minutes with lambda
+#53-84th congress : 2 hours with lambda
+#85-118th congress : 1 hour, 30 minutes with lambda
+
+
+
+#parallelize congresses asynch : 30-40 minutes with deafault max concurrency of 10 operations

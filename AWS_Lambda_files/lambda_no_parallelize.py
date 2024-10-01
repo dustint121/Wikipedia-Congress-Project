@@ -11,8 +11,7 @@ import persons_wiki
             #copy and paste the site-packages into the "python3.12" folder specified above
     #after, compress everything the "python" folder into a "python.zip" folder and upload as the file for your layer
 
-
-#video tutorial: https://www.youtube.com/watch?v=I13FPeC5LTw
+#also set the timeout to 5 seconds instead of the default 3 seconds
 def lambda_handler(event, context):
     args = json.loads(event["body"])
     URL = args['URL']
@@ -24,3 +23,25 @@ def lambda_handler(event, context):
         'statusCode': 200,
         'body': json.dumps(result)
     }
+
+
+
+
+
+#Local python code calling the above lambda function below:
+
+# load_dotenv()
+# lambda_api_point = os.getenv("LAMBDA_API_POINT") #place a variable, LAMBDA_API_POINT, into .env file with API point to lambda
+
+# payload = {
+#     "URL": URL,
+#     "congress_start_date": congress_start_date,
+#     "congress_num": congress_num
+#     }
+
+# headers = {'Content-Type': 'application/json'}
+# result = requests.post(lambda_api_point, data=json.dumps(payload))
+# new_data = result.json()
+# if result.status_code != 200:
+#     print("Status code not 200: " + str(result.status_code))
+#     return
