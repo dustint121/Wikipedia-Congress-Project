@@ -11,7 +11,7 @@ import persons_wiki
             #copy and paste the site-packages into the "python3.12" folder specified above
     #after, compress everything the "python" folder into a "python.zip" folder and upload as the file for your layer
 
-#also set the timeout to 5 seconds instead of the default 3 seconds
+#also set the timeout to 5 seconds instead of the default 3 seconds, since calls can go to 3 seconds
 def lambda_handler(event, context):
     args = json.loads(event["body"])
     URL = args['URL']

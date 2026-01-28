@@ -18,8 +18,10 @@ aws_secret_access_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
 #has 3 tables for congressional session: past, current, future
 def get_full_congress_dict():
     page_url = "https://en.wikipedia.org/wiki/List_of_United_States_Congresses"
-    response = requests.get(page_url)
-    soup = BeautifulSoup(response.content, 'html.parser')
+    email = "anon72@gmail.com"
+    header = { 'User-Agent': email }
+    request = requests.get(page_url, headers=header)
+    soup = BeautifulSoup(request.content, 'html.parser')
 
     congress_dict = {}
     #below variables has "previous congress" and "current congress" in two tables in a list
