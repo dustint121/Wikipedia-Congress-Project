@@ -1,5 +1,5 @@
 # About
-My project repo for webscraping Wikipedia for United States Congress data from nearly 250 years (1789-2023) to later analyze the Tableau project: [here.](https://public.tableau.com/app/profile/dustin.tran.d/viz/USCongressProject/NumberofCongresspeopleOverTime)
+My project repo for webscraping Wikipedia for United States Congress data from nearly 250 years (1789-2023) to later analyze on a Tableau project: [here.](https://public.tableau.com/app/profile/dustin.tran.d/viz/USCongressProject/NumberofCongresspeopleOverTime)
 
 This project was initially ran fully using the local machine but faced API request limits for a single machine. **AWS Lambda** is used to overcome this limit by distributed its request over multiple machines. 
 Later, Lambda is also used for asynchronous function calls to make more efficient use of time, dropping the time to run the code from 6 hours to under 30 minutes. 
